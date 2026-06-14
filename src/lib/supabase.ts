@@ -1,8 +1,9 @@
 import { createClient } from "@supabase/supabase-js"
 import { MOCK_MEMBERS, MOCK_COMMITTEES, MOCK_COMMITTEE_MEMBERS } from "./mockData"
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://ggawbtjxewjmtbmvjpiw.supabase.co"
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnYXdidGp4ZXdqbXRibXZqcGl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNjc0NTUsImV4cCI6MjA5Njk0MzQ1NX0.ZFqHcrJWlNF5Xrm1L-GVc7uk-GRrqCnM2z-9TKuMyfo"
+
 
 function createMockSupabaseClient() {
   console.warn("Supabase credentials missing. Falling back to local mock client with seed data.")
