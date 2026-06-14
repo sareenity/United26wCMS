@@ -1,9 +1,7 @@
 import type { Member } from "./types"
 
 const TOKEN_KEY = "bni-cms-token"
-const EDGE_URL = import.meta.env.DEV
-  ? "/api-proxy"
-  : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/cms-api`
+const EDGE_URL = "/api/cms-api"
 
 function getToken(): string | null {
   return sessionStorage.getItem(TOKEN_KEY)

@@ -13,10 +13,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api-proxy": {
+      "/api/cms-api": {
         target: "https://ggawbtjxewjmtbmvjpiw.supabase.co",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api-proxy/, "/functions/v1/cms-api"),
+        rewrite: (path) => path.replace(/^\/api\/cms-api/, "/functions/v1/cms-api"),
       },
     },
   },
