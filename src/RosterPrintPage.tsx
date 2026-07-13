@@ -1,19 +1,10 @@
 import { useEffect, useState } from "react"
 import type { Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
+import { Crown, Star } from "lucide-react"
 
 // BNI brand red (matches oklch(0.46 0.22 26) in index.css)
 const R = "#C8102E"
-
-const CORE_VALUES = [
-  { label: "Givers Gain®", desc: "What you give, you get back. Build relationships by contributing first." },
-  { label: "Building Relationships", desc: "People do business with people they know, like, and trust." },
-  { label: "Lifelong Learning", desc: "The more you learn, the more you earn." },
-  { label: "Traditions + Innovation", desc: "Respect what works. Embrace what's new." },
-  { label: "Positive Attitude", desc: "Your attitude is contagious. Choose positivity." },
-  { label: "Accountability", desc: "Own your results. Celebrate wins. Own your misses." },
-  { label: "Recognition", desc: "Recognise others and be recognised. Appreciation drives performance." },
-]
 
 const CONTACT = {
   email: "bniuniteditdc@gmail.com",
@@ -22,8 +13,6 @@ const CONTACT = {
   linkedin: "BNI United",
   linkedinUrl: "https://www.linkedin.com/in/bni-united-601082400/",
 }
-
-const POWER_TEAMS: Member["power_team"][] = ["Corporate", "Lifestyle & Wellness", "MSME", "Property"]
 
 const PRINT_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,6 +32,10 @@ const PRINT_CSS = `
   }
   .no-print-bar button:hover { opacity: 0.9; }
 
+  .global-print-header {
+    display: none;
+  }
+
   .print-page {
     background: white; width: 210mm; min-height: 297mm;
     margin: 0 auto 20px; padding: 15mm 14mm;
@@ -53,14 +46,18 @@ const PRINT_CSS = `
   /* cover decorative elements */
   .cover-accent-top {
     position: absolute; top: 0; right: 0; width: 60mm; height: 60mm;
-    background: ${R}; opacity: 0.06; border-radius: 0 0 0 100%;
-  }
-  .cover-accent-bottom {
-    position: absolute; bottom: 0; left: 0; width: 50mm; height: 50mm;
-    background: ${R}; opacity: 0.06; border-radius: 0 100% 0 0;
+    background: ${R}; opacity: 0.05; border-radius: 0 0 0 100%;
   }
 
-  /* section */
+  /* headers & section */
+  .screen-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 2px solid ${R}; padding-bottom: 8px; margin-bottom: 15px;
+    height: 48px;
+  }
+  .screen-header img.logo-left { height: 40px; object-fit: contain; }
+  .screen-header img.logo-right { height: 30px; object-fit: contain; }
+
   .section-header {
     background: ${R}; color: white; padding: 7px 14px; margin-bottom: 14px;
     border-radius: 4px;
@@ -69,58 +66,64 @@ const PRINT_CSS = `
   .section-header h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
   .section-header span { font-size: 10px; opacity: 0.8; }
 
-  .section-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-    color: ${R}; margin-bottom: 6px;
-  }
-
-  /* member card in grid */
-  .members-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .members-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .member-card {
-    border: 1px solid #e8e8e8; border-radius: 6px; padding: 10px;
-    display: flex; gap: 9px; align-items: flex-start; break-inside: avoid;
-  }
-  .member-avatar {
-    width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-    background: #fbe9ec; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: ${R}; overflow: hidden;
-  }
-  .member-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .member-info { flex: 1; min-width: 0; }
-  .member-name { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
-  .member-cat { font-size: 9.5px; color: #555; line-height: 1.4; margin-top: 1px; }
-  .member-company { font-size: 9px; color: #888; line-height: 1.3; margin-top: 1px; }
-  .member-badge {
-    display: inline-block; font-size: 8px; font-weight: 700; padding: 1px 5px;
-    border-radius: 3px; margin-top: 3px; background: ${R}; color: white;
-  }
-
-  /* support/leadership row cards */
-  .staff-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  /* staff/leadership row cards */
+  .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
   .staff-card {
-    border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px 10px;
+    border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px;
     text-align: center; break-inside: avoid;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    min-height: 140px;
   }
   .staff-avatar {
-    width: 48px; height: 48px; border-radius: 50%; margin: 0 auto 8px;
-    background: #111; display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 700; color: white; overflow: hidden;
+    width: 44px; height: 44px; border-radius: 50%; margin-bottom: 6px;
+    background: #fbe9ec; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: ${R}; overflow: hidden;
+    flex-shrink: 0;
   }
   .staff-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .staff-name { font-size: 11px; font-weight: 700; color: #111; line-height: 1.3; }
-  .staff-role { font-size: 9.5px; color: #666; margin-top: 2px; }
-  .staff-company { font-size: 9px; color: #999; margin-top: 2px; }
+  .staff-role { font-size: 9px; color: ${R}; font-weight: 600; margin-top: 1px; }
+  .staff-company { font-size: 8.5px; color: #777; margin-top: 1px; }
+  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; font-size: 8.5px; width: 100%; }
+  .staff-contact-info a { color: #444; text-decoration: none; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 
-  /* values grid */
-  .values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .value-card {
-    border: 1px solid #e8e8e8; border-radius: 6px; padding: 12px;
-    border-left: 3px solid ${R}; break-inside: avoid;
+  /* table roster styling */
+  .roster-table-container {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    overflow: hidden;
   }
-  .value-name { font-size: 11px; font-weight: 700; color: #111; margin-bottom: 4px; }
-  .value-desc { font-size: 10px; color: #666; line-height: 1.5; }
-  .value-num { font-size: 22px; font-weight: 800; color: ${R}; opacity: 0.12; float: right; margin-top: -4px; }
+  .roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .roster-table th {
+    background: #fcfcfc;
+    border-bottom: 2px solid ${R};
+    color: #333;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 10px;
+  }
+  .roster-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+  }
+  .roster-table tr {
+    break-inside: avoid;
+  }
+  .roster-table tr:last-child td {
+    border-bottom: none;
+  }
+  .roster-table tr:nth-child(even) td {
+    background: #fdfdfd;
+  }
 
   /* contact page */
   .contact-item { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -129,27 +132,72 @@ const PRINT_CSS = `
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .contact-label { font-size: 10px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .contact-value { font-size: 13px; font-weight: 600; color: #111; }
+  .contact-value { font-size: 12px; font-weight: 600; color: #111; }
 
   hr.red-rule { border: none; border-top: 2px solid ${R}; margin: 16px 0; }
   hr.light-rule { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+
+  /* footer positioning */
+  .print-footer {
+    position: absolute;
+    bottom: 12mm;
+    left: 14mm;
+    right: 14mm;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    color: #bbb;
+  }
 
   @media print {
     *, *::before, *::after {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    @page { size: A4 portrait; margin: 12mm 14mm; }
+    @page {
+      size: A4 portrait;
+      margin: 25mm 10mm 15mm 10mm;
+    }
     body { background: white; }
     .print-wrapper { padding: 0; }
     .no-print-bar { display: none !important; }
+    
+    .global-print-header {
+      display: flex !important;
+      position: fixed;
+      top: -20mm;
+      left: 0;
+      right: 0;
+      height: 15mm;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid ${R};
+      background: white;
+      z-index: 1000;
+    }
+    .global-print-header img.logo-left { height: 12mm; object-fit: contain; }
+    .global-print-header img.logo-right { height: 8mm; object-fit: contain; }
+
     .print-page {
-      width: 100%; min-height: initial; margin: 0; padding: 0;
+      width: 100%; min-height: 257mm; margin: 0; padding: 0;
       box-shadow: none; page-break-after: always;
+      position: relative;
     }
     .print-page:last-child { page-break-after: avoid; }
     .no-break { page-break-inside: avoid; }
     .pb-before { page-break-before: always; }
+
+    .screen-header { display: none !important; }
+    
+    .print-footer {
+      position: absolute;
+      bottom: 0mm;
+      left: 0;
+      right: 0;
+    }
   }
 `
 
@@ -157,7 +205,7 @@ function initials(m: Member) {
   return `${m.first_name[0] ?? ""}${m.last_name[0] ?? ""}`.toUpperCase()
 }
 
-function MemberAvatar({ member, size = 38 }: { member: Member; size?: number }) {
+function MemberAvatar({ member, size = 32 }: { member: Member; size?: number }) {
   const [err, setErr] = useState(false)
   if (member.photo_url && !err) {
     return (
@@ -176,27 +224,10 @@ function MemberAvatar({ member, size = 38 }: { member: Member; size?: number }) 
       style={{
         width: size, height: size, borderRadius: "50%", background: "#fbe9ec",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.32, fontWeight: 700, color: R, flexShrink: 0,
+        fontSize: size * 0.35, fontWeight: 700, color: R, flexShrink: 0,
       }}
     >
       {initials(member)}
-    </div>
-  )
-}
-
-function MemberCard({ member }: { member: Member }) {
-  return (
-    <div className="member-card no-break">
-      <MemberAvatar member={member} size={38} />
-      <div className="member-info">
-        <div className="member-name">
-          {member.first_name} {member.last_name}
-        </div>
-        <div className="member-cat">{member.business_category}</div>
-        {member.company_name && <div className="member-company">{member.company_name}</div>}
-        {member.is_power_team_captain && <span className="member-badge">Captain</span>}
-        {member.is_power_team_vice_captain && <span className="member-badge" style={{ background: "#555" }}>Vice Captain</span>}
-      </div>
     </div>
   )
 }
@@ -216,6 +247,10 @@ function StaffCard({ member }: { member: Member }) {
       <div className="staff-name">{member.first_name} {member.last_name}</div>
       {member.tagline && <div className="staff-role">{member.tagline}</div>}
       {member.company_name && <div className="staff-company">{member.company_name}</div>}
+      <div className="staff-contact-info">
+        {member.phone && <a href={`tel:${member.phone}`}>📞 {member.phone}</a>}
+        {member.email && <a href={`mailto:${member.email}`} style={{ wordBreak: "break-all" }}>✉️ {member.email}</a>}
+      </div>
     </div>
   )
 }
@@ -245,23 +280,19 @@ export default function RosterPrintPage() {
   const activeMembers = members.filter((m) => m.is_active)
   const supportTeam = activeMembers.filter((m) => m.chapter_role === "support").sort((a, b) => a.sort_order - b.sort_order)
   const leadership = activeMembers.filter((m) => m.chapter_role === "leadership").sort((a, b) => a.sort_order - b.sort_order)
-  const byPowerTeam = (pt: Member["power_team"]) =>
-    activeMembers
-      .filter((m) => m.chapter_role === "member" && m.power_team === pt)
-      .sort((a, b) => {
-        if (a.is_power_team_captain !== b.is_power_team_captain) return a.is_power_team_captain ? -1 : 1
-        if (a.is_power_team_vice_captain !== b.is_power_team_vice_captain) return a.is_power_team_vice_captain ? -1 : 1
-        
-        const lastA = (a.last_name || "").trim().toLowerCase()
-        const lastB = (b.last_name || "").trim().toLowerCase()
-        const lastCompare = lastA.localeCompare(lastB, undefined, { sensitivity: "base" })
-        if (lastCompare !== 0) return lastCompare
-        
-        const firstA = (a.first_name || "").trim().toLowerCase()
-        const firstB = (b.first_name || "").trim().toLowerCase()
-        return firstA.localeCompare(firstB, undefined, { sensitivity: "base" })
-      })
-  const noPowerTeam = sortMembersBySurname(activeMembers.filter((m) => m.chapter_role === "member" && !m.power_team))
+  
+  // Chapter roster contains all active members except support
+  const rosterMembers = activeMembers.filter((m) => m.chapter_role !== "support")
+  const sortedRoster = sortMembersBySurname(rosterMembers)
+
+  // Chunk the roster to fit cleanly on pages (15 members per page)
+  const MEMBERS_PER_PAGE = 15
+  const chunkedRoster: Member[][] = []
+  for (let i = 0; i < sortedRoster.length; i += MEMBERS_PER_PAGE) {
+    chunkedRoster.push(sortedRoster.slice(i, i + MEMBERS_PER_PAGE))
+  }
+
+  const totalPrintPages = 1 + chunkedRoster.length + 1 // Support/Leadership + Roster Pages + Connect Page
   const generatedDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
 
   if (!ready) return null
@@ -290,205 +321,153 @@ export default function RosterPrintPage() {
         <button onClick={() => window.print()}>Print / Save as PDF</button>
       </div>
 
+      {/* Global Repeating Print Header */}
+      <div className="global-print-header">
+        <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+        <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+      </div>
+
       <div className="print-wrapper" style={{ paddingTop: "56px" }}>
 
-        {/* ── PAGE 1: COVER ── */}
-        <div className="print-page" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div className="cover-accent-top" />
-          <div className="cover-accent-bottom" />
-
-          {/* Logos */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
-            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" style={{ height: 56, objectFit: "contain" }} />
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" style={{ height: 44, objectFit: "contain" }} />
-          </div>
-
-          {/* Title */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", padding: "24px 0" }}>
-            <div style={{ display: "inline-block", background: R, color: "white", fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", padding: "5px 14px", borderRadius: 20, marginBottom: 20, alignSelf: "center" }}>
-              2026 CHAPTER ROSTER
-            </div>
-            <h1 style={{ fontSize: 48, fontWeight: 900, color: "#111", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 8 }}>
-              BNI <span style={{ color: R }}>United</span>
-            </h1>
-            <p style={{ fontSize: 14, color: "#666", letterSpacing: "0.04em" }}>
-              Mumbai, India · Business Network International
-            </p>
-
-            <hr className="red-rule" style={{ width: 80, margin: "28px auto" }} />
-
-            {/* Quote */}
-            <blockquote style={{ maxWidth: "78%", margin: "0 auto", textAlign: "center" }}>
-              <p style={{ fontSize: 16, fontStyle: "italic", color: "#333", lineHeight: 1.65, marginBottom: 12 }}>
-                "The strength of your business is directly related to the size and quality of your network."
-              </p>
-              <footer style={{ fontSize: 12, color: R, fontWeight: 700 }}>
-                — Dr. Ivan Misner, Founder &amp; Chairman, BNI
-              </footer>
-            </blockquote>
-          </div>
-
-          {/* Bottom stats strip */}
-          <div style={{ borderTop: `2px solid ${R}`, paddingTop: 20, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 0 }}>
-            {[
-              { label: "Active Members", value: activeMembers.length.toString() },
-              { label: "Chapter Members", value: (activeMembers.length - supportTeam.length).toString() },
-              { label: "Support Staff", value: supportTeam.length.toString() },
-              { label: "Power Teams", value: "4" },
-            ].map((s, i) => (
-              <div key={s.label} style={{ textAlign: "center", borderRight: i < 3 ? "1px solid #eee" : "none", padding: "0 8px" }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: R, lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4 }}>{s.label}</div>
-              </div>
-            ))}
-          </div>
-
-          <p style={{ fontSize: 9, color: "#bbb", textAlign: "center", marginTop: 16 }}>
-            Generated {generatedDate}
-          </p>
-        </div>
-
-        {/* ── PAGE 2: BNI CORE VALUES ── */}
+        {/* ── PAGE 1: SUPPORT TEAM & LEADERSHIP ── */}
         <div className="print-page">
-          <div className="section-header">
-            <h2>BNI Core Values</h2>
-            <span>The Foundation of BNI's Culture</span>
+          <div className="screen-header">
+            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
           </div>
 
-          <p style={{ fontSize: 11, color: "#666", marginBottom: 18, lineHeight: 1.6 }}>
-            BNI was founded in 1985 on the principle of <strong style={{ color: R }}>"Givers Gain®"</strong> — the belief
-            that by giving business to others, you will get business in return. These seven core values shape every interaction
-            within the BNI community worldwide.
-          </p>
-
-          <div className="values-grid">
-            {CORE_VALUES.map((v, i) => (
-              <div key={v.label} className="value-card no-break">
-                <div className="value-num">{String(i + 1).padStart(2, "0")}</div>
-                <div className="value-name">{v.label}</div>
-                <div className="value-desc">{v.desc}</div>
-              </div>
-            ))}
-          </div>
-
-          <hr className="light-rule" style={{ marginTop: 24 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={{ fontSize: 9, color: "#bbb" }}>BNI United · 2026 Chapter Roster</p>
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" style={{ height: 20, objectFit: "contain", opacity: 0.4 }} />
-          </div>
-        </div>
-
-        {/* ── PAGE 3: SUPPORT TEAM + LEADERSHIP ── */}
-        <div className="print-page">
           {/* Support Team */}
           <div className="section-header">
             <h2>BNI United Support Team</h2>
             <span>{supportTeam.length} Staff</span>
           </div>
-          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${Math.min(supportTeam.length, 4)}, 1fr)` }}>
+          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${Math.min(supportTeam.length, 3)}, 1fr)` }}>
             {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 
-          <hr className="light-rule" />
+          <hr className="light-rule" style={{ margin: "14px 0" }} />
 
           {/* Leadership Team */}
-          <div className="section-header" style={{ marginTop: 20 }}>
+          <div className="section-header">
             <h2>Leadership Team</h2>
             <span>{leadership.length} Members</span>
           </div>
-          <div className="members-grid-2col">
-            {leadership.map((m) => (
-              <div key={m.id} className="member-card no-break" style={{ padding: "12px 14px" }}>
-                <MemberAvatar member={m} size={44} />
-                <div className="member-info">
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#111", lineHeight: 1.3 }}>
-                    {m.first_name} {m.last_name}
-                  </div>
-                  {m.tagline && <div style={{ fontSize: 10, color: R, fontWeight: 600, marginTop: 2 }}>{m.tagline}</div>}
-                  <div style={{ fontSize: 10, color: "#555", marginTop: 2 }}>{m.business_category}</div>
-                  {m.company_name && <div style={{ fontSize: 9.5, color: "#888", marginTop: 1 }}>{m.company_name}</div>}
-                </div>
-              </div>
-            ))}
+          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${Math.min(leadership.length, 3)}, 1fr)` }}>
+            {leadership.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 
-          <hr className="light-rule" style={{ marginTop: 24 }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={{ fontSize: 9, color: "#bbb" }}>BNI United · 2026 Chapter Roster</p>
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" style={{ height: 20, objectFit: "contain", opacity: 0.4 }} />
+          <div className="print-footer">
+            <span>BNI United · 2026 Chapter Roster</span>
+            <span>Page 1 of {totalPrintPages}</span>
           </div>
         </div>
 
-        {/* ── PAGES 4-7: POWER TEAMS ── */}
-        {POWER_TEAMS.map((pt) => {
-          const ptMembers = byPowerTeam(pt)
-          if (ptMembers.length === 0) return null
+        {/* ── PAGES 2 to 2+N: CHAPTER ROSTER TABLE ── */}
+        {chunkedRoster.map((pageMembers, pageIdx) => {
+          const currentPageNum = pageIdx + 2
           return (
-            <div key={pt} className="print-page">
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <div style={{ flex: 1, height: 2, background: R, opacity: 0.2 }} />
-                <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: R }}>
-                  Power Team
-                </div>
-                <div style={{ flex: 1, height: 2, background: R, opacity: 0.2 }} />
+            <div key={pageIdx} className="print-page">
+              <div className="screen-header">
+                <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
               </div>
 
               <div className="section-header">
-                <h2>{pt} Power Team</h2>
-                <span>{ptMembers.length} Members</span>
+                <h2>BNI United Chapter Roster</h2>
+                <span>{sortedRoster.length} Members</span>
               </div>
 
-              <div className="members-grid">
-                {ptMembers.map((m) => <MemberCard key={m.id} member={m} />)}
+              <div className="roster-table-container">
+                <table className="roster-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "30%" }}>Member</th>
+                      <th style={{ width: "20%" }}>Power Team</th>
+                      <th style={{ width: "25%" }}>Business Category &amp; Company</th>
+                      <th style={{ width: "25%" }}>Contact Details</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pageMembers.map((m) => (
+                      <tr key={m.id}>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <MemberAvatar member={m} size={28} />
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
+                                <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#111" }}>
+                                  {m.first_name} {m.last_name}
+                                </span>
+                                {m.is_power_team_captain && (
+                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: R, borderRadius: "50%", padding: 2 }} title="Captain">
+                                    <Crown size={8} style={{ color: "white" }} />
+                                  </span>
+                                )}
+                                {m.is_power_team_vice_captain && (
+                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#fbe9ec", borderRadius: "50%", padding: 2, border: `1px solid ${R}` }} title="Vice Captain">
+                                    <Star size={8} style={{ color: R }} />
+                                  </span>
+                                )}
+                              </div>
+                              {m.chapter_role === "leadership" && m.tagline && (
+                                <div style={{ fontSize: "8px", color: R, fontWeight: 600, marginTop: "1px" }}>
+                                  {m.tagline}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: "9.5px", color: "#444" }}>
+                          {m.power_team ?? "—"}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: "9.5px", fontWeight: 600, color: "#333", lineHeight: 1.2 }}>{m.business_category}</div>
+                          {m.company_name && <div style={{ fontSize: "8.5px", color: "#777", marginTop: "1px" }}>{m.company_name}</div>}
+                        </td>
+                        <td>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontSize: "9px" }}>
+                            {m.phone && <a href={`tel:${m.phone}`} style={{ color: "#333", textDecoration: "none" }}>📞 {m.phone}</a>}
+                            {m.email && <a href={`mailto:${m.email}`} style={{ color: "#333", textDecoration: "none", wordBreak: "break-all" }}>✉️ {m.email}</a>}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              <hr className="light-rule" style={{ marginTop: 24 }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <p style={{ fontSize: 9, color: "#bbb" }}>BNI United · 2026 Chapter Roster</p>
-                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" style={{ height: 20, objectFit: "contain", opacity: 0.4 }} />
+              <div className="print-footer">
+                <span>BNI United · 2026 Chapter Roster</span>
+                <span>Page {currentPageNum} of {totalPrintPages}</span>
               </div>
             </div>
           )
         })}
 
-        {/* Unassigned members */}
-        {noPowerTeam.length > 0 && (
-          <div className="print-page">
-            <div className="section-header">
-              <h2>Chapter Members</h2>
-              <span>{noPowerTeam.length} Members</span>
-            </div>
-            <div className="members-grid">
-              {noPowerTeam.map((m) => <MemberCard key={m.id} member={m} />)}
-            </div>
-          </div>
-        )}
-
-        {/* ── LAST PAGE: CONTACT ── */}
+        {/* ── LAST PAGE: BNI UNITED CONNECT ── */}
         <div className="print-page" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div className="screen-header">
+            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+          </div>
+
           <div className="cover-accent-top" />
 
-          <div>
-            {/* Logos */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 40 }}>
-              <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" style={{ height: 48, objectFit: "contain" }} />
-              <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" style={{ height: 36, objectFit: "contain" }} />
-            </div>
-
-            <div style={{ textAlign: "center", marginBottom: 48 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: R, marginBottom: 10 }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: R, marginBottom: 8 }}>
                 Connect With Us
               </div>
-              <h2 style={{ fontSize: 32, fontWeight: 900, color: "#111", lineHeight: 1.2, marginBottom: 8 }}>
+              <h2 style={{ fontSize: 28, fontWeight: 900, color: "#111", lineHeight: 1.2, marginBottom: 6 }}>
                 BNI United
               </h2>
               <p style={{ fontSize: 13, color: "#666" }}>Mumbai, India · Business Network International</p>
             </div>
 
-            <hr className="red-rule" style={{ width: "60%", margin: "0 auto 40px" }} />
+            <hr className="red-rule" style={{ width: "50%", margin: "0 auto 30px" }} />
 
             {/* Contact info */}
-            <div style={{ maxWidth: "72%", margin: "0 auto" }}>
+            <div style={{ maxWidth: "65%", margin: "0 auto" }}>
               <div className="contact-item">
                 <div className="contact-icon">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -497,7 +476,7 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">Email</div>
-                  <div className="contact-value">{CONTACT.email}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.email}</div>
                 </div>
               </div>
 
@@ -509,7 +488,7 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">Instagram</div>
-                  <div className="contact-value">{CONTACT.instagram}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.instagram}</div>
                 </div>
               </div>
 
@@ -521,21 +500,17 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">LinkedIn</div>
-                  <div className="contact-value">{CONTACT.linkedin}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.linkedin}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Footer */}
-          <div style={{ borderTop: `2px solid ${R}`, paddingTop: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: R, letterSpacing: "0.08em" }}>"Givers Gain®"</p>
-              <p style={{ fontSize: 9, color: "#bbb" }}>2026 Chapter Roster</p>
+          <div className="print-footer" style={{ borderTop: `2px solid ${R}`, position: "relative", bottom: 0, left: 0, right: 0, marginTop: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+              <p style={{ fontSize: 9, fontWeight: 700, color: R, letterSpacing: "0.08em" }}>"Givers Gain®"</p>
+              <p style={{ fontSize: 9, color: "#bbb" }}>Page {totalPrintPages} of {totalPrintPages}</p>
             </div>
-            <p style={{ fontSize: 9, color: "#ccc", textAlign: "center" }}>
-              © {new Date().getFullYear()} BNI United, Mumbai. All rights reserved. Generated {generatedDate}.
-            </p>
           </div>
         </div>
 
