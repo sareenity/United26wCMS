@@ -8,8 +8,8 @@ const R = "#C8102E"
 
 const CONTACT = {
   email: "bniuniteditdc@gmail.com",
-  instagram: "@bni_united_mumbai",
-  instagramUrl: "https://www.instagram.com/bni_united_mumbai",
+  instagram: "bniunitedmumbai",
+  instagramUrl: "https://www.instagram.com/bniunitedmumbai/",
   linkedin: "BNI United",
   linkedinUrl: "https://www.linkedin.com/in/bni-united-601082400/",
 }
@@ -341,8 +341,8 @@ export default function RosterPrintPage() {
           </div>
 
           {/* Page 1 Header Title */}
-          <div style={{ textAlign: "center", marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px solid #eee" }}>
-            <h1 style={{ fontSize: "16px", fontWeight: 800, color: R, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+          <div style={{ textAlign: "center", marginBottom: "20px", paddingBottom: "12px", borderBottom: `2px solid #eee` }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 900, color: R, letterSpacing: "0.02em", textTransform: "uppercase" }}>
               BNI United Chapter Roster
             </h1>
           </div>
@@ -352,7 +352,7 @@ export default function RosterPrintPage() {
             <h2>BNI United Support Team</h2>
             <span>{supportTeam.length} Staff</span>
           </div>
-          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${Math.min(supportTeam.length, 3)}, 1fr)` }}>
+          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${supportTeam.length}, 1fr)` }}>
             {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 
@@ -363,7 +363,7 @@ export default function RosterPrintPage() {
             <h2>Leadership Team</h2>
             <span>{leadership.length} Members</span>
           </div>
-          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${Math.min(leadership.length, 3)}, 1fr)` }}>
+          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${leadership.length}, 1fr)` }}>
             {leadership.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 

@@ -40,13 +40,13 @@ export function Footer() {
                 bniuniteditdc@gmail.com
               </a>
               <a
-                href="https://www.instagram.com/bni_united_mumbai"
+                href="https://www.instagram.com/bniunitedmumbai/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2.5 text-sm text-background/70 hover:text-primary transition-colors group"
               >
                 <ExternalLink size={16} className="shrink-0 group-hover:text-primary" />
-                @bni_united_mumbai (Instagram)
+                bniunitedmumbai (Instagram)
               </a>
               <a
                 href="https://www.linkedin.com/in/bni-united-601082400/"
