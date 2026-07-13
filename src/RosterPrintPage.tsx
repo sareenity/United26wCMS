@@ -59,32 +59,32 @@ const PRINT_CSS = `
   .screen-header img.logo-right { height: 30px; object-fit: contain; }
 
   .section-header {
-    background: ${R}; color: white; padding: 7px 14px; margin-bottom: 14px;
+    background: ${R}; color: white; padding: 5px 10px; margin-bottom: 10px;
     border-radius: 4px;
     display: flex; align-items: center; justify-content: space-between;
   }
   .section-header h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
   .section-header span { font-size: 10px; opacity: 0.8; }
 
-  /* staff/leadership row cards */
-  .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  /* staff/leadership row cards (compacted to prevent A4 overflow) */
+  .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
   .staff-card {
-    border: 1px solid #e8e8e8; border-radius: 8px; padding: 10px;
+    border: 1px solid #e8e8e8; border-radius: 6px; padding: 8px;
     text-align: center; break-inside: avoid;
-    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-    min-height: 140px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 110px;
   }
   .staff-avatar {
-    width: 44px; height: 44px; border-radius: 50%; margin-bottom: 6px;
+    width: 36px; height: 36px; border-radius: 50%; margin-bottom: 4px;
     background: #fbe9ec; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; color: ${R}; overflow: hidden;
+    font-size: 12px; font-weight: 700; color: ${R}; overflow: hidden;
     flex-shrink: 0;
   }
   .staff-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .staff-name { font-size: 11px; font-weight: 700; color: #111; line-height: 1.3; }
-  .staff-role { font-size: 9px; color: ${R}; font-weight: 600; margin-top: 1px; }
-  .staff-company { font-size: 8.5px; color: #777; margin-top: 1px; }
-  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; font-size: 8.5px; width: 100%; }
+  .staff-name { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
+  .staff-role { font-size: 8.5px; color: ${R}; font-weight: 600; margin-top: 1px; }
+  .staff-company { font-size: 8px; color: #777; margin-top: 1px; }
+  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 5px; font-size: 8px; width: 100%; }
   .staff-contact-info a { color: #444; text-decoration: none; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 
   /* table roster styling */
@@ -133,9 +133,11 @@ const PRINT_CSS = `
   }
   .contact-label { font-size: 10px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
   .contact-value { font-size: 12px; font-weight: 600; color: #111; }
+  .contact-value a { color: inherit; text-decoration: none; }
+  .contact-value a:hover { text-decoration: underline; }
 
   hr.red-rule { border: none; border-top: 2px solid ${R}; margin: 16px 0; }
-  hr.light-rule { border: none; border-top: 1px solid #eee; margin: 14px 0; }
+  hr.light-rule { border: none; border-top: 1px solid #eee; margin: 10px 0; }
 
   /* footer positioning */
   .print-footer {
@@ -159,7 +161,7 @@ const PRINT_CSS = `
     }
     @page {
       size: A4 portrait;
-      margin: 25mm 10mm 15mm 10mm;
+      margin: 20mm 10mm 15mm 10mm;
     }
     body { background: white; }
     .print-wrapper { padding: 0; }
@@ -168,23 +170,24 @@ const PRINT_CSS = `
     .global-print-header {
       display: flex !important;
       position: fixed;
-      top: -20mm;
+      top: 0;
       left: 0;
       right: 0;
-      height: 15mm;
+      height: 14mm;
       justify-content: space-between;
       align-items: center;
       border-bottom: 2px solid ${R};
       background: white;
       z-index: 1000;
     }
-    .global-print-header img.logo-left { height: 12mm; object-fit: contain; }
-    .global-print-header img.logo-right { height: 8mm; object-fit: contain; }
+    .global-print-header img.logo-left { height: 11mm; object-fit: contain; }
+    .global-print-header img.logo-right { height: 7mm; object-fit: contain; }
 
     .print-page {
       width: 100%; min-height: 257mm; margin: 0; padding: 0;
       box-shadow: none; page-break-after: always;
       position: relative;
+      padding-top: 18mm !important; /* Clears fixed header top spacing */
     }
     .print-page:last-child { page-break-after: avoid; }
     .no-break { page-break-inside: avoid; }
@@ -337,6 +340,13 @@ export default function RosterPrintPage() {
             <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
           </div>
 
+          {/* Page 1 Header Title */}
+          <div style={{ textAlign: "center", marginBottom: "15px", paddingBottom: "10px", borderBottom: "1px solid #eee" }}>
+            <h1 style={{ fontSize: "16px", fontWeight: 800, color: R, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+              BNI United Chapter Roster
+            </h1>
+          </div>
+
           {/* Support Team */}
           <div className="section-header">
             <h2>BNI United Support Team</h2>
@@ -346,7 +356,7 @@ export default function RosterPrintPage() {
             {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 
-          <hr className="light-rule" style={{ margin: "14px 0" }} />
+          <hr className="light-rule" />
 
           {/* Leadership Team */}
           <div className="section-header">
@@ -477,7 +487,9 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">Email</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.email}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>
+                    <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
+                  </div>
                 </div>
               </div>
 
@@ -489,7 +501,9 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">Instagram</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.instagram}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>
+                    <a href={CONTACT.instagramUrl} target="_blank" rel="noopener noreferrer">{CONTACT.instagram}</a>
+                  </div>
                 </div>
               </div>
 
@@ -501,7 +515,9 @@ export default function RosterPrintPage() {
                 </div>
                 <div>
                   <div className="contact-label">LinkedIn</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>{CONTACT.linkedin}</div>
+                  <div className="contact-value" style={{ fontSize: "12px" }}>
+                    <a href={CONTACT.linkedinUrl} target="_blank" rel="noopener noreferrer">{CONTACT.linkedin}</a>
+                  </div>
                 </div>
               </div>
             </div>
