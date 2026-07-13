@@ -184,7 +184,7 @@ const PRINT_CSS = `
     .global-print-header img.logo-right { height: 7mm; object-fit: contain; }
 
     .print-page {
-      width: 100%; min-height: 257mm; margin: 0; padding: 0;
+      width: 100%; min-height: initial !important; margin: 0; padding: 0;
       box-shadow: none; page-break-after: always;
       position: relative;
       padding-top: 18mm !important; /* Clears fixed header top spacing */
