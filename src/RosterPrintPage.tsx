@@ -260,10 +260,11 @@ export default function RosterPrintPage() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("roster-pdf-members")
+    const stored = localStorage.getItem("roster-pdf-members")
     if (stored) {
       try {
         setMembers(JSON.parse(stored))
+        localStorage.removeItem("roster-pdf-members")
       } catch {
         // ignore
       }

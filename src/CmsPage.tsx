@@ -49,7 +49,7 @@ export default function CmsPage() {
   }
 
   function handleDownloadPDF() {
-    sessionStorage.setItem("roster-pdf-members", JSON.stringify(members))
+    localStorage.setItem("roster-pdf-members", JSON.stringify(members))
     window.open("/roster-pdf", "_blank", "noopener")
   }
 
