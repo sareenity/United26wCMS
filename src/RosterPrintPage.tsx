@@ -64,8 +64,8 @@ const PRINT_CSS = `
     border-radius: 4px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .section-header h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-  .section-header span { font-size: 10px; opacity: 0.8; }
+  .section-header h2 { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .section-header span { font-size: 12px; opacity: 0.8; }
 
   /* staff/leadership row cards (compacted to prevent A4 overflow) */
   .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
@@ -82,10 +82,10 @@ const PRINT_CSS = `
     flex-shrink: 0;
   }
   .staff-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .staff-name { font-size: 10.5px; font-weight: 700; color: #111; line-height: 1.3; }
-  .staff-role { font-size: 8.5px; color: ${R}; font-weight: 600; margin-top: 1px; }
-  .staff-company { font-size: 8px; color: #777; margin-top: 1px; }
-  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 5px; font-size: 8px; width: 100%; }
+  .staff-name { font-size: 12.5px; font-weight: 700; color: #111; line-height: 1.3; }
+  .staff-role { font-size: 10px; color: ${R}; font-weight: 600; margin-top: 1px; }
+  .staff-company { font-size: 9.5px; color: #777; margin-top: 1px; }
+  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 5px; font-size: 9.5px; width: 100%; }
   .staff-contact-info a { color: #444; text-decoration: none; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 
   /* table roster styling */
@@ -105,14 +105,14 @@ const PRINT_CSS = `
     background: #fcfcfc;
     border-bottom: 2px solid ${R};
     color: #333;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
   .roster-table td {
-    padding: 8px 10px;
+    padding: 6px 8px;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
   }
@@ -405,7 +405,6 @@ export default function RosterPrintPage() {
           {/* Support Team */}
           <div className="section-header">
             <h2>BNI United Support Team</h2>
-            <span>{supportTeam.length} Staff</span>
           </div>
           <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${supportTeam.length}, 1fr)` }}>
             {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
@@ -415,11 +414,49 @@ export default function RosterPrintPage() {
 
           {/* Leadership Team */}
           <div className="section-header">
-            <h2>Leadership Team</h2>
-            <span>{leadership.length} Members</span>
+            <h2>BNI United Leadership Team</h2>
           </div>
           <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${leadership.length}, 1fr)` }}>
             {leadership.map((m) => <StaffCard key={m.id} member={m} />)}
+          </div>
+
+          <hr className="light-rule" />
+
+          {/* BNI Core Values */}
+          <div style={{ marginTop: "10px" }}>
+            <div className="section-header" style={{ marginBottom: "8px" }}>
+              <h2>BNI Core Values</h2>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px", padding: "0 2px" }}>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>1. Givers Gain®</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>The underlying philosophy of BNI. We exemplify that by giving business to others; you will get business in return.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>2. Lifelong Learning</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>We believe in the continuous improvement of personal and professional skills. BNI provides opportunities to support lifelong learning.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>3. Traditions + Innovation</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>Tradition tells us where we come from and lays our foundation, but we must always look for ways to innovate.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>4. Positive Attitude</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>BNI provides an environment that enables you to surround yourself with people who want to help you succeed.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>5. Building Relationships</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>Networking is about farming connections rather than hunting. People want to do business with people they know and trust.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>6. Accountability</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>If you want to have a powerful personal network, you must have accountability. Otherwise, it becomes a social group.</p>
+              </div>
+              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc", gridColumn: "span 2" }}>
+                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>7. Recognition</h4>
+                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>It’s important to recognize those who are contributing to the success of others.</p>
+              </div>
+            </div>
           </div>
 
           <div className="print-footer">
@@ -461,7 +498,7 @@ export default function RosterPrintPage() {
                             <MemberAvatar member={m} size={28} />
                             <div>
                               <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
-                                <span style={{ fontSize: "10.5px", fontWeight: 700, color: "#111" }}>
+                                <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#111" }}>
                                   {m.first_name} {m.last_name}
                                 </span>
                                 {m.is_power_team_captain && (
@@ -476,22 +513,22 @@ export default function RosterPrintPage() {
                                 )}
                               </div>
                               {m.chapter_role === "leadership" && m.tagline && (
-                                <div style={{ fontSize: "8px", color: R, fontWeight: 600, marginTop: "1px" }}>
+                                <div style={{ fontSize: "10px", color: R, fontWeight: 600, marginTop: "1px" }}>
                                   {m.tagline}
                                 </div>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td style={{ fontSize: "9.5px", color: "#444" }}>
+                        <td style={{ fontSize: "11.5px", color: "#444" }}>
                           {m.power_team ?? "—"}
                         </td>
                         <td>
-                          <div style={{ fontSize: "9.5px", fontWeight: 600, color: "#333", lineHeight: 1.2 }}>{m.business_category}</div>
-                          {m.company_name && <div style={{ fontSize: "8.5px", color: "#777", marginTop: "1px" }}>{m.company_name}</div>}
+                          <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#333", lineHeight: 1.2 }}>{m.business_category}</div>
+                          {m.company_name && <div style={{ fontSize: "10px", color: "#777", marginTop: "1px" }}>{m.company_name}</div>}
                         </td>
                         <td>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontSize: "9px" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontSize: "11px" }}>
                             {m.phone && <a href={`tel:${m.phone}`} style={{ color: "#333", textDecoration: "none" }}>📞 {m.phone}</a>}
                             {m.email && <a href={`mailto:${m.email}`} style={{ color: "#333", textDecoration: "none", wordBreak: "break-all" }}>✉️ {m.email}</a>}
                           </div>
