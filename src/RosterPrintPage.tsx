@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import type { Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
-import { Crown, Star } from "lucide-react"
+import { Crown, Star, Loader2 } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
 // BNI brand red (matches oklch(0.46 0.22 26) in index.css)
 const R = "#C8102E"
@@ -261,25 +262,57 @@ function StaffCard({ member }: { member: Member }) {
 export default function RosterPrintPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [ready, setReady] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem("roster-pdf-members")
-    if (stored) {
+    async function loadMembers() {
+      const stored = localStorage.getItem("roster-pdf-members")
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMembers(parsed)
+            localStorage.removeItem("roster-pdf-members")
+            setReady(true)
+            return
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // Fallback: Fetch directly from Supabase for public access
+      setLoading(true)
       try {
-        setMembers(JSON.parse(stored))
-        localStorage.removeItem("roster-pdf-members")
-      } catch {
-        // ignore
+        const { data, error: fetchErr } = await supabase
+          .from("members")
+          .select("*")
+          .order("sort_order")
+        
+        if (fetchErr) {
+          throw fetchErr
+        }
+        if (data) {
+          setMembers(data)
+        }
+      } catch (err: any) {
+        console.error("Error fetching members for roster print:", err)
+        setError(err.message || "Failed to load chapter roster.")
+      } finally {
+        setLoading(false)
+        setReady(true)
       }
     }
-    setReady(true)
+
+    loadMembers()
   }, [])
 
   useEffect(() => {
-    if (!ready || members.length === 0) return
+    if (!ready || loading || members.length === 0) return
     const t = setTimeout(() => window.print(), 1500)
     return () => clearTimeout(t)
-  }, [ready, members])
+  }, [ready, loading, members])
 
   const activeMembers = members.filter((m) => m.is_active)
   const supportTeam = activeMembers.filter((m) => m.chapter_role === "support").sort((a, b) => a.sort_order - b.sort_order)
@@ -299,17 +332,39 @@ export default function RosterPrintPage() {
   const totalPrintPages = 1 + chunkedRoster.length + 1 // Support/Leadership + Roster Pages + Connect Page
   const generatedDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
 
-  if (!ready) return null
-
-  if (members.length === 0) {
+  if (loading || !ready) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", fontFamily: "sans-serif" }}>
-        <div style={{ textAlign: "center" }}>
-          <p style={{ color: "#666", fontSize: 16, marginBottom: 8 }}>No roster data found.</p>
-          <p style={{ color: "#999", fontSize: 13 }}>Please open this page from the CMS Admin panel.</p>
-          <button onClick={() => window.close()} style={{ marginTop: 16, padding: "8px 16px", background: R, color: "white", border: "none", borderRadius: 4, cursor: "pointer" }}>
-            Close
-          </button>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", fontFamily: "sans-serif", backgroundColor: "#f0f0f0" }}>
+        <Loader2 className="animate-spin" style={{ width: 40, height: 40, color: R, marginBottom: 16 }} />
+        <p style={{ color: "#666", fontSize: 16 }}>Loading chapter roster...</p>
+      </div>
+    )
+  }
+
+  if (error || members.length === 0) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", fontFamily: "sans-serif", backgroundColor: "#f0f0f0" }}>
+        <div style={{ textAlign: "center", background: "white", padding: 32, borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", maxWidth: "90%", width: 400 }}>
+          <p style={{ color: R, fontSize: 16, fontWeight: "bold", marginBottom: 8 }}>
+            {error || "No roster data found."}
+          </p>
+          <p style={{ color: "#666", fontSize: 13, marginBottom: 16 }}>
+            Please make sure the database is online, or try opening this page from the CMS Admin panel.
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+            <button 
+              onClick={() => window.location.reload()} 
+              style={{ padding: "8px 16px", background: R, color: "white", border: "none", borderRadius: 4, cursor: "pointer", fontWeight: 600 }}
+            >
+              Retry
+            </button>
+            <a 
+              href="/" 
+              style={{ padding: "8px 16px", background: "#eaeaea", color: "#333", borderRadius: 4, textDecoration: "none", fontSize: 13, fontWeight: 600, display: "inline-flex", alignItems: "center" }}
+            >
+              Go to Home
+            </a>
+          </div>
         </div>
       </div>
     )
