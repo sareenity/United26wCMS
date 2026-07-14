@@ -4,8 +4,8 @@ import { sortMembersBySurname } from "@/lib/utils"
 import { Crown, Star, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
-// BNI brand red (matches oklch(0.46 0.22 26) in index.css)
-const R = "#C8102E"
+// BNI brand red (official digital BNI Red hex: #CF2030)
+const R = "#CF2030"
 
 const CONTACT = {
   email: "bniuniteditdc@gmail.com",
