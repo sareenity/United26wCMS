@@ -24,7 +24,7 @@ const PRINT_CSS = `
   .no-print-bar {
     position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
     background: #1a1a1a; color: white; padding: 10px 20px;
-    display: flex; align-items: center; justify-between; gap: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
     font-size: 13px;
   }
   .no-print-bar button {
@@ -140,6 +140,12 @@ const PRINT_CSS = `
   hr.red-rule { border: none; border-top: 2px solid ${R}; margin: 16px 0; }
   hr.light-rule { border: none; border-top: 1px solid #eee; margin: 10px 0; }
 
+  /* core values styles */
+  .core-values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 2px; }
+  .core-value-card { border: 1px solid #e8e8e8; border-radius: 4px; padding: 6px 8px; background: #fcfcfc; }
+  .core-value-card h4 { font-size: 11px; font-weight: 700; color: ${R}; margin-bottom: 2px; }
+  .core-value-card p { font-size: 9px; color: #555; line-height: 1.3; }
+
   /* footer positioning */
   .print-footer {
     position: absolute;
@@ -162,45 +168,122 @@ const PRINT_CSS = `
     }
     @page {
       size: A4 portrait;
-      margin: 20mm 10mm 15mm 10mm;
+      margin: 0;
     }
-    body { background: white; }
-    .print-wrapper { padding: 0; }
-    .no-print-bar { display: none !important; }
-    
-    .global-print-header {
-      display: flex !important;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 14mm;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid ${R};
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
       background: white;
-      z-index: 1000;
     }
-    .global-print-header img.logo-left { height: 11mm; object-fit: contain; }
-    .global-print-header img.logo-right { height: 7mm; object-fit: contain; }
+    .print-wrapper {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    .no-print-bar {
+      display: none !important;
+    }
+    .global-print-header {
+      display: none !important;
+    }
 
     .print-page {
-      width: 100%; min-height: initial !important; margin: 0; padding: 0;
-      box-shadow: none; page-break-after: always;
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 15mm 14mm !important;
+      box-shadow: none;
+      page-break-after: always;
       position: relative;
-      padding-top: 18mm !important; /* Clears fixed header top spacing */
+      overflow: hidden;
+      background: white;
+      border: none;
     }
-    .print-page:last-child { page-break-after: avoid; }
-    .no-break { page-break-inside: avoid; }
-    .pb-before { page-break-before: always; }
+    .print-page:last-child {
+      page-break-after: avoid;
+    }
+    .no-break {
+      page-break-inside: avoid;
+    }
+    .pb-before {
+      page-break-before: always;
+    }
 
-    .screen-header { display: none !important; }
+    .screen-header {
+      display: flex !important;
+      border-bottom: 2px solid ${R};
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+      height: 48px;
+    }
     
     .print-footer {
       position: absolute;
-      bottom: 0mm;
-      left: 0;
-      right: 0;
+      bottom: 12mm;
+      left: 14mm;
+      right: 14mm;
+      display: flex !important;
+    }
+
+    /* Page 1 Compact Adjustments to guarantee zero A4 overflow */
+    .staff-grid {
+      gap: 6px !important;
+      margin-bottom: 8px !important;
+    }
+    .staff-card {
+      padding: 6px !important;
+      min-height: 100px !important;
+    }
+    .staff-avatar {
+      width: 32px !important;
+      height: 32px !important;
+      margin-bottom: 2px !important;
+    }
+    .staff-name {
+      font-size: 11.5px !important;
+    }
+    .staff-role {
+      font-size: 9.5px !important;
+    }
+    .staff-company {
+      font-size: 9px !important;
+    }
+    .staff-contact-info {
+      font-size: 9px !important;
+      margin-top: 3px !important;
+    }
+    hr.light-rule {
+      margin: 6px 0 !important;
+    }
+    .core-values-grid {
+      gap: 6px !important;
+    }
+    .core-value-card {
+      padding: 4px 6px !important;
+    }
+
+    /* Compact Table Styles to fit 12 members comfortably */
+    .roster-table th {
+      padding: 4px 6px !important;
+      font-size: 11px !important;
+    }
+    .roster-table td {
+      padding: 4px 6px !important;
+    }
+    .roster-table td span {
+      font-size: 11px !important;
+    }
+    .roster-table td div {
+      font-size: 10px !important;
+    }
+    .roster-table td a {
+      font-size: 9.5px !important;
+    }
+    .member-avatar-wrapper {
+      width: 24px !important;
+      height: 24px !important;
+      font-size: 8.5px !important;
     }
   }
 `
@@ -213,7 +296,7 @@ function MemberAvatar({ member, size = 32 }: { member: Member; size?: number }) 
   const [err, setErr] = useState(false)
   if (member.photo_url && !err) {
     return (
-      <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+      <div className="member-avatar-wrapper" style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
         <img
           src={member.photo_url}
           alt={`${member.first_name} ${member.last_name}`}
@@ -225,6 +308,7 @@ function MemberAvatar({ member, size = 32 }: { member: Member; size?: number }) 
   }
   return (
     <div
+      className="member-avatar-wrapper"
       style={{
         width: size, height: size, borderRadius: "50%", background: "#fbe9ec",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -310,6 +394,7 @@ export default function RosterPrintPage() {
 
   useEffect(() => {
     if (!ready || loading || members.length === 0) return
+    if (window.location.search.includes("noprint")) return
     const t = setTimeout(() => window.print(), 1500)
     return () => clearTimeout(t)
   }, [ready, loading, members])
@@ -322,8 +407,8 @@ export default function RosterPrintPage() {
   const rosterMembers = activeMembers.filter((m) => m.chapter_role !== "support")
   const sortedRoster = sortMembersBySurname(rosterMembers)
 
-  // Chunk the roster to fit cleanly on pages (15 members per page)
-  const MEMBERS_PER_PAGE = 15
+  // Chunk the roster to fit cleanly on pages (12 members per page)
+  const MEMBERS_PER_PAGE = 12
   const chunkedRoster: Member[][] = []
   for (let i = 0; i < sortedRoster.length; i += MEMBERS_PER_PAGE) {
     chunkedRoster.push(sortedRoster.slice(i, i + MEMBERS_PER_PAGE))
@@ -427,34 +512,34 @@ export default function RosterPrintPage() {
             <div className="section-header" style={{ marginBottom: "8px" }}>
               <h2>BNI Core Values</h2>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px", padding: "0 2px" }}>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>1. Givers Gain®</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>The underlying philosophy of BNI. We exemplify that by giving business to others; you will get business in return.</p>
+            <div className="core-values-grid">
+              <div className="core-value-card">
+                <h4>1. Givers Gain®</h4>
+                <p>The underlying philosophy of BNI. We exemplify that by giving business to others; you will get business in return.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>2. Lifelong Learning</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>We believe in the continuous improvement of personal and professional skills. BNI provides opportunities to support lifelong learning.</p>
+              <div className="core-value-card">
+                <h4>2. Lifelong Learning</h4>
+                <p>We believe in the continuous improvement of personal and professional skills. BNI provides opportunities to support lifelong learning.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>3. Traditions + Innovation</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>Tradition tells us where we come from and lays our foundation, but we must always look for ways to innovate.</p>
+              <div className="core-value-card">
+                <h4>3. Traditions + Innovation</h4>
+                <p>Tradition tells us where we come from and lays our foundation, but we must always look for ways to innovate.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>4. Positive Attitude</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>BNI provides an environment that enables you to surround yourself with people who want to help you succeed.</p>
+              <div className="core-value-card">
+                <h4>4. Positive Attitude</h4>
+                <p>BNI provides an environment that enables you to surround yourself with people who want to help you succeed.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>5. Building Relationships</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>Networking is about farming connections rather than hunting. People want to do business with people they know and trust.</p>
+              <div className="core-value-card">
+                <h4>5. Building Relationships</h4>
+                <p>Networking is about farming connections rather than hunting. People want to do business with people they know and trust.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>6. Accountability</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>If you want to have a powerful personal network, you must have accountability. Otherwise, it becomes a social group.</p>
+              <div className="core-value-card">
+                <h4>6. Accountability</h4>
+                <p>If you want to have a powerful personal network, you must have accountability. Otherwise, it becomes a social group.</p>
               </div>
-              <div style={{ border: "1px solid #e8e8e8", borderRadius: "4px", padding: "6px 8px", background: "#fcfcfc", gridColumn: "span 2" }}>
-                <h4 style={{ fontSize: "11px", fontWeight: 700, color: R, marginBottom: "2px" }}>7. Recognition</h4>
-                <p style={{ fontSize: "9px", color: "#555", lineHeight: "1.3" }}>It’s important to recognize those who are contributing to the success of others.</p>
+              <div className="core-value-card" style={{ gridColumn: "span 2" }}>
+                <h4>7. Recognition</h4>
+                <p>It’s important to recognize those who are contributing to the success of others.</p>
               </div>
             </div>
           </div>
@@ -484,10 +569,10 @@ export default function RosterPrintPage() {
                 <table className="roster-table">
                   <thead>
                     <tr>
-                      <th style={{ width: "30%" }}>Member</th>
-                      <th style={{ width: "20%" }}>Power Team</th>
-                      <th style={{ width: "25%" }}>Business Category &amp; Company</th>
-                      <th style={{ width: "25%" }}>Contact Details</th>
+                      <th style={{ width: "22%" }}>Member</th>
+                      <th style={{ width: "13%" }}>Power Team</th>
+                      <th style={{ width: "33%" }}>Business Category &amp; Company</th>
+                      <th style={{ width: "32%" }}>Contact Details</th>
                     </tr>
                   </thead>
                   <tbody>
