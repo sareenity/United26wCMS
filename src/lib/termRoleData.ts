@@ -6,7 +6,6 @@ type SourceLead = string | { name: string; role: string }
 
 interface RoleRow {
   name: string
-  owner: string
   leads: SourceLead[]
 }
 
@@ -80,25 +79,24 @@ const MAIN_COMMITTEES = [
 ]
 
 const ROLE_ROWS: RoleRow[] = [
-  { name: "121 Coordinators", owner: "Rohit", leads: ["Jinal", "Poonam"] },
-  { name: "30 Sec +Energiser", owner: "Rohit", leads: ["Tamanna", "Shagun"] },
-  { name: "BNI Connect", owner: "Rohit", leads: ["Khushbu", "Hardik"] },
-  { name: "Education Coordinator", owner: "Rohit", leads: ["Priyanka", "Neisha", "Rohit J"] },
-  { name: "FP Coordinators", owner: "Rohit", leads: ["Sanikka", "Shagun", "Purva"] },
-  { name: "Go Green Coordinator", owner: "Rohit", leads: ["Chandrashekhar", "Zubin"] },
-  { name: "Business Council coordinator", owner: "Rohit", leads: ["Priyanka", "Hrishit"] },
-  { name: "Mentor Coordinator", owner: "Bhavana", leads: ["Sanikka", "Nikhil"] },
-  { name: "Power Date Coordinator", owner: "Rohit", leads: ["Chandrashekhar", "Jayessh", "Pooja"] },
-  { name: "Power Team Coordinator", owner: "Rohit", leads: ["Rohit J", "Saumil", "Nalini"] },
-  { name: "Referral, TYFCB and Gives & Ask Coordinator", owner: "Rohit", leads: ["Jinal", "Khushbu"] },
-  { name: "Social Media", owner: "Rohit", leads: ["Adnan", "Sachin", "Purvi"] },
-  { name: "Sports", owner: "Rohit", leads: ["Atharva", "Kushal", "Purvi"] },
-  { name: "Socials / Events", owner: "Rohit", leads: ["Divya", "Shekhar", "Kushal", "Adnan", "Tamanna"] },
-  { name: "Special Creatives", owner: "Rohit", leads: ["Rushi", "Adnan", "Sachin"] },
-  { name: "Notable Networker", owner: "Rohit", leads: ["Kushal", "Mayur", "Ankit"] },
+  { name: "121 Coordinators", leads: ["Jinal", "Poonam"] },
+  { name: "30 Sec +Energiser", leads: ["Tamanna", "Shagun"] },
+  { name: "BNI Connect", leads: ["Khushbu", "Hardik"] },
+  { name: "Education Coordinator", leads: ["Priyanka", "Neisha", "Rohit J"] },
+  { name: "FP Coordinators", leads: ["Sanikka", "Shagun", "Purva"] },
+  { name: "Go Green Coordinator", leads: ["Chandrashekhar", "Zubin"] },
+  { name: "Business Council coordinator", leads: ["Priyanka", "Hrishit"] },
+  { name: "Mentor Coordinator", leads: ["Sanikka", "Nikhil"] },
+  { name: "Power Date Coordinator", leads: ["Chandrashekhar", "Jayessh", "Pooja"] },
+  { name: "Power Team Coordinator", leads: ["Rohit J", "Saumil", "Nalini"] },
+  { name: "Referral, TYFCB and Gives & Ask Coordinator", leads: ["Jinal", "Khushbu"] },
+  { name: "Social Media", leads: ["Adnan", "Sachin", "Purvi"] },
+  { name: "Sports", leads: ["Atharva", "Kushal", "Purvi"] },
+  { name: "Socials / Events", leads: ["Divya", "Shekhar", "Kushal", "Adnan", "Tamanna"] },
+  { name: "Special Creatives", leads: ["Rushi", "Adnan", "Sachin"] },
+  { name: "Notable Networker", leads: ["Kushal", "Mayur", "Ankit"] },
   {
     name: "Tech Team / Show Runner",
-    owner: "Rohit",
     leads: [
       "Divya",
       "Zubin",
@@ -109,17 +107,17 @@ const ROLE_ROWS: RoleRow[] = [
       { name: "Neisha", role: "Time Keeper" },
     ],
   },
-  { name: "Testimonial Coordinator", owner: "Rohit", leads: ["Ankit", "Mayur"] },
-  { name: "BNI Events & Training", owner: "Rohit", leads: ["Neisha", "Rohit J", "Priyanka"] },
-  { name: "Lead VHT", owner: "Sahil", leads: ["Jayessh", "Shweta", "Sanikka"] },
-  { name: "Venue Co-ordinator", owner: "Sahil", leads: ["Shweta"] },
-  { name: "Visitor Orientation", owner: "Bhavana", leads: ["Pooja", "Anuja", "Nikhil", "Priyanka", "Shekhar", "Hardik"] },
-  { name: "Door Prize", owner: "Sahil", leads: ["Sanikka", "Purva"] },
-  { name: "Birthday", owner: "Rohit", leads: ["Poonam", "Tamanna"] },
-  { name: "Growth Coordinator", owner: "Bhavana", leads: ["Hardik", "Khushbu"] },
-  { name: "Retention Coordintor", owner: "Bhavana", leads: ["Pooja", "Rushi"] },
-  { name: "Culture Coordinator", owner: "Rohit", leads: ["Adnan", "Rushi"] },
-  { name: "Women's Growth Coordinator", owner: "Rohit", leads: ["Poonam", "Shagun"] },
+  { name: "Testimonial Coordinator", leads: ["Ankit", "Mayur"] },
+  { name: "BNI Events & Training", leads: ["Neisha", "Rohit J", "Priyanka"] },
+  { name: "Lead VHT", leads: ["Jayessh", "Shweta", "Sanikka"] },
+  { name: "Venue Co-ordinator", leads: ["Shweta"] },
+  { name: "Visitor Orientation", leads: ["Pooja", "Anuja", "Nikhil", "Priyanka", "Shekhar", "Hardik"] },
+  { name: "Door Prize", leads: ["Sanikka", "Purva"] },
+  { name: "Birthday", leads: ["Poonam", "Tamanna"] },
+  { name: "Growth Coordinator", leads: ["Hardik", "Khushbu"] },
+  { name: "Retention Coordintor", leads: ["Pooja", "Rushi"] },
+  { name: "Culture Coordinator", leads: ["Adnan", "Rushi"] },
+  { name: "Women's Growth Coordinator", leads: ["Poonam", "Shagun"] },
 ]
 
 const MEMBERSHIP_MEMBERS = ["Pooja", "Sanikka", "Priyanka", "Hardik", "Anuja", "Purva", "Atharva", "Shweta"]
@@ -161,9 +159,6 @@ function sourceAssignmentRows() {
   ]
 
   for (const row of ROLE_ROWS) {
-    if (row.owner !== "Rohit") {
-      rows.push({ committeeName: row.name, sourceName: row.owner, role: "Owner" })
-    }
     for (const lead of row.leads) {
       rows.push({
         committeeName: row.name,
@@ -207,7 +202,9 @@ export function resolveTermRoleData(
   return {
     members: sourceMembers,
     committees: sourceCommittees,
-    committeeMembers: sourceCommitteeMembers,
+    committeeMembers: sourceCommitteeMembers.filter(
+      (assignment) => assignment.role.trim().toLocaleLowerCase() !== "owner",
+    ),
     unmatchedNames: [],
     inactiveAssignedNames: [],
     source: "database",
