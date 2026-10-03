@@ -8,6 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { MemberAvatar } from "@/components/MemberAvatar"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
+import { compareMembersBySurname } from "@/lib/utils"
 
 interface CommitteesSectionProps {
   committees: Committee[]
@@ -56,6 +57,14 @@ function CommitteeBlock({ members, membersById, onMemberClick }: {
   membersById: Record<string, Member>
   onMemberClick: (m: Member) => void
 }) {
+  const sortedMembers = [...members].sort((a, b) => {
+    const memberA = membersById[a.member_id]
+    const memberB = membersById[b.member_id]
+    if (!memberA) return 1
+    if (!memberB) return -1
+    return compareMembersBySurname(memberA, memberB)
+  })
+
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between mb-2">
@@ -64,7 +73,7 @@ function CommitteeBlock({ members, membersById, onMemberClick }: {
         </p>
       </div>
       {members.length > 0 ? (
-        members.map((cm) => (
+        sortedMembers.map((cm) => (
           <MemberRow key={cm.id} cm={cm} membersById={membersById} onMemberClick={onMemberClick} />
         ))
       ) : (
@@ -154,38 +163,40 @@ export function CommitteesSection({ committees, committeeMembersMap, membersById
                     <Layers size={16} className="text-primary" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">Coordinators</p>
+                    <p className="font-semibold text-foreground">Coordinator Roles</p>
                     <p className="text-xs text-muted-foreground">{coordinatorCommittees.length} coordinator roles</p>
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="px-5 pb-4 pt-2">
-                <Accordion type="multiple" className="space-y-2">
-                  {coordinatorCommittees.map((c) => (
-                    <AccordionItem
-                      key={c.id}
-                      value={c.id}
-                      className="border border-border/60 rounded-lg overflow-hidden"
-                    >
-                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-secondary/40 text-sm [&[data-state=open]]:bg-primary/5">
-                        <div className="flex items-center gap-2 text-left">
-                          <ChevronDown size={14} className="text-primary shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-                          <span className="font-medium text-foreground text-sm">{c.name}</span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({(committeeMembersMap[c.id] || []).length})
-                          </span>
-                        </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-3 pt-1">
-                        <CommitteeBlock
-                          members={committeeMembersMap[c.id] || []}
-                          membersById={membersById}
-                          onMemberClick={onMemberClick}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                <div className="max-h-[70vh] overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable]">
+                  <Accordion type="multiple" className="space-y-2">
+                    {coordinatorCommittees.map((c) => (
+                      <AccordionItem
+                        key={c.id}
+                        value={c.id}
+                        className="border border-border/60 rounded-lg overflow-hidden"
+                      >
+                        <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-secondary/40 text-sm [&[data-state=open]]:bg-primary/5">
+                          <div className="flex items-center gap-2 text-left">
+                            <ChevronDown size={14} className="text-primary shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                            <span className="font-medium text-foreground text-sm">{c.name}</span>
+                            <span className="text-xs text-muted-foreground ml-1">
+                              ({(committeeMembersMap[c.id] || []).length})
+                            </span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-3 pt-1">
+                          <CommitteeBlock
+                            members={committeeMembersMap[c.id] || []}
+                            membersById={membersById}
+                            onMemberClick={onMemberClick}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
               </AccordionContent>
             </AccordionItem>
           )}

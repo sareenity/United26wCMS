@@ -3,7 +3,7 @@ import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
 import { Crown, Star, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { applyTermRoleData } from "@/lib/termRoleData"
+import { resolveTermRoleData } from "@/lib/termRoleData"
 
 // BNI brand red (official digital BNI Red hex: #CF2030)
 const R = "#CF2030"
@@ -32,7 +32,12 @@ const PRINT_CSS = `
     background: ${R}; color: white; border: none; cursor: pointer;
     padding: 7px 18px; border-radius: 4px; font-size: 13px; font-weight: 600;
   }
+  .no-print-bar a {
+    background: white; color: #1a1a1a; text-decoration: none;
+    padding: 7px 18px; border-radius: 4px; font-size: 13px; font-weight: 600;
+  }
   .no-print-bar button:hover { opacity: 0.9; }
+  .no-print-bar a:hover { opacity: 0.9; }
 
   .global-print-header {
     display: none;
@@ -274,27 +279,29 @@ const PRINT_CSS = `
       padding: 4px 6px !important;
     }
 
-    /* Compact Table Styles to fit 12 members comfortably */
+    /* Balanced roster rows: readable type and enough separation for scanning. */
     .roster-table th {
-      padding: 4px 6px !important;
-      font-size: 11px !important;
+      padding: 6px 7px !important;
+      font-size: 11.5px !important;
     }
     .roster-table td {
-      padding: 4px 6px !important;
+      padding: 6px 7px !important;
+      line-height: 1.3 !important;
     }
     .roster-table td span {
-      font-size: 11px !important;
+      font-size: 12px !important;
     }
     .roster-table td div {
-      font-size: 10px !important;
+      font-size: 10.5px !important;
     }
     .roster-table td a {
-      font-size: 9.5px !important;
+      font-size: 10px !important;
+      line-height: 1.35 !important;
     }
     .member-avatar-wrapper {
-      width: 24px !important;
-      height: 24px !important;
-      font-size: 8.5px !important;
+      width: 26px !important;
+      height: 26px !important;
+      font-size: 9px !important;
     }
   }
 `
@@ -354,51 +361,8 @@ function StaffCard({ member }: { member: Member }) {
   )
 }
 
-function CommitteeRosterCard({
-  committee,
-  assignments,
-  membersById,
-}: {
-  committee: Committee
-  assignments: CommitteeMember[]
-  membersById: Record<string, Member>
-}) {
-  const visibleAssignments = assignments
-    .filter((assignment) => membersById[assignment.member_id])
-    .sort((a, b) => {
-      const first = membersById[a.member_id]
-      const second = membersById[b.member_id]
-      return `${first.last_name} ${first.first_name}`.localeCompare(`${second.last_name} ${second.first_name}`)
-    })
-
-  return (
-    <div className="committee-card">
-      <h3>{committee.name}</h3>
-      {visibleAssignments.length > 0 ? (
-        <div className="committee-member-list">
-          {visibleAssignments.map((assignment) => {
-            const member = membersById[assignment.member_id]
-            return (
-              <div key={assignment.id} className="committee-member-row">
-                <span className="committee-member-name">{member.first_name} {member.last_name}</span>
-                {assignment.role !== "member" && assignment.role !== "coordinator" && (
-                  <span className="committee-member-role">{assignment.role}</span>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      ) : (
-        <p className="committee-empty">No members assigned</p>
-      )}
-    </div>
-  )
-}
-
 export default function RosterPrintPage() {
   const [members, setMembers] = useState<Member[]>([])
-  const [committees, setCommittees] = useState<Committee[]>([])
-  const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>([])
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -418,16 +382,12 @@ export default function RosterPrintPage() {
             && Array.isArray(parsed.committees)
             && Array.isArray(parsed.committeeMembers)
           ) {
-            if (import.meta.env.DEV) {
-              const preview = applyTermRoleData(parsed.members)
-              setMembers(preview.members)
-              setCommittees(preview.committees)
-              setCommitteeMembers(preview.committeeMembers)
-            } else {
-              setMembers(parsed.members)
-              setCommittees(parsed.committees)
-              setCommitteeMembers(parsed.committeeMembers)
-            }
+            const rosterData = resolveTermRoleData(
+              parsed.members,
+              parsed.committees,
+              parsed.committeeMembers,
+            )
+            setMembers(rosterData.members)
             localStorage.removeItem("roster-pdf-members")
             setReady(true)
             return
@@ -450,16 +410,12 @@ export default function RosterPrintPage() {
         if (committeesResult.error) throw committeesResult.error
         if (assignmentsResult.error) throw assignmentsResult.error
 
-        if (import.meta.env.DEV) {
-          const preview = applyTermRoleData((membersResult.data ?? []) as Member[])
-          setMembers(preview.members)
-          setCommittees(preview.committees)
-          setCommitteeMembers(preview.committeeMembers)
-        } else {
-          setMembers((membersResult.data ?? []) as Member[])
-          setCommittees((committeesResult.data ?? []) as Committee[])
-          setCommitteeMembers((assignmentsResult.data ?? []) as CommitteeMember[])
-        }
+        const rosterData = resolveTermRoleData(
+          (membersResult.data ?? []) as Member[],
+          (committeesResult.data ?? []) as Committee[],
+          (assignmentsResult.data ?? []) as CommitteeMember[],
+        )
+        setMembers(rosterData.members)
       } catch (err: unknown) {
         console.error("Error fetching members for roster print:", err)
         setError(err instanceof Error ? err.message : "Failed to load chapter roster.")
@@ -486,35 +442,16 @@ export default function RosterPrintPage() {
   // Chapter roster contains all active members except support
   const rosterMembers = activeMembers.filter((m) => m.chapter_role !== "support")
   const sortedRoster = sortMembersBySurname(rosterMembers)
-  const membersById = Object.fromEntries(activeMembers.map((member) => [member.id, member]))
-  const activeCommitteeMembers = committeeMembers.filter((assignment) => membersById[assignment.member_id])
-  const assignmentsByCommittee = activeCommitteeMembers.reduce<Record<string, CommitteeMember[]>>((map, assignment) => {
-    if (!map[assignment.committee_id]) map[assignment.committee_id] = []
-    map[assignment.committee_id].push(assignment)
-    return map
-  }, {})
-  const mainCommittees = committees
-    .filter((committee) => committee.committee_group === "membership" || committee.committee_group === "visitor_host")
-    .sort((a, b) => a.sort_order - b.sort_order)
-  const coordinatorCommittees = committees
-    .filter((committee) => committee.committee_group === "coordinator")
-    .sort((a, b) => a.sort_order - b.sort_order)
 
-  // Chunk the roster to fit cleanly on pages (12 members per page)
-  const MEMBERS_PER_PAGE = 12
+  // Two balanced roster pages avoid large trailing blank areas while keeping
+  // enough vertical separation for names and contact details to remain legible.
+  const MEMBERS_PER_PAGE = 18
   const chunkedRoster: Member[][] = []
   for (let i = 0; i < sortedRoster.length; i += MEMBERS_PER_PAGE) {
     chunkedRoster.push(sortedRoster.slice(i, i + MEMBERS_PER_PAGE))
   }
 
-  const COORDINATORS_PER_PAGE = 10
-  const chunkedCoordinators: Committee[][] = []
-  for (let i = 0; i < coordinatorCommittees.length; i += COORDINATORS_PER_PAGE) {
-    chunkedCoordinators.push(coordinatorCommittees.slice(i, i + COORDINATORS_PER_PAGE))
-  }
-
-  const mainCommitteePageCount = mainCommittees.length > 0 ? 1 : 0
-  const totalPrintPages = 1 + chunkedRoster.length + mainCommitteePageCount + chunkedCoordinators.length + 1
+  const totalPrintPages = 1 + chunkedRoster.length + 1
   const generatedDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
 
   if (loading || !ready) {
@@ -562,13 +499,16 @@ export default function RosterPrintPage() {
       {/* Screen-only action bar */}
       <div className="no-print-bar">
         <span>BNI United Roster · {generatedDate} · {activeMembers.length} active members</span>
-        <button onClick={() => window.print()}>Print / Save as PDF</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <a href="/BNI_United_Chapter_Roster.pdf" download>Download fixed PDF</a>
+          <button onClick={() => window.print()}>Print current roster</button>
+        </div>
       </div>
 
       {/* Global Repeating Print Header */}
       <div className="global-print-header">
-        <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-        <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+        <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
+        <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
       </div>
 
       <div className="print-wrapper" style={{ paddingTop: "56px" }}>
@@ -576,8 +516,8 @@ export default function RosterPrintPage() {
         {/* ── PAGE 1: SUPPORT TEAM & LEADERSHIP ── */}
         <div className="print-page">
           <div className="screen-header">
-            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
+            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
           </div>
 
           {/* Page 1 Header Title */}
@@ -656,8 +596,8 @@ export default function RosterPrintPage() {
           return (
             <div key={pageIdx} className="print-page">
               <div className="screen-header">
-                <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+                <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
+                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
               </div>
 
               <div className="section-header">
@@ -732,74 +672,11 @@ export default function RosterPrintPage() {
           )
         })}
 
-        {mainCommittees.length > 0 && (
-          <div className="print-page">
-            <div className="screen-header">
-              <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-              <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
-            </div>
-
-            <div className="section-header">
-              <h2>Committees and Visitor Hosts</h2>
-              <span>{mainCommittees.length} Teams</span>
-            </div>
-
-            <div className="committee-grid">
-              {mainCommittees.map((committee) => (
-                <CommitteeRosterCard
-                  key={committee.id}
-                  committee={committee}
-                  assignments={assignmentsByCommittee[committee.id] ?? []}
-                  membersById={membersById}
-                />
-              ))}
-            </div>
-
-            <div className="print-footer">
-              <span>BNI United · 2026 Chapter Roster</span>
-              <span>Page {2 + chunkedRoster.length} of {totalPrintPages}</span>
-            </div>
-          </div>
-        )}
-
-        {chunkedCoordinators.map((pageCommittees, pageIdx) => {
-          const currentPageNum = 2 + chunkedRoster.length + mainCommitteePageCount + pageIdx
-          return (
-            <div key={`coordinators-${pageIdx}`} className="print-page">
-              <div className="screen-header">
-                <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
-              </div>
-
-              <div className="section-header">
-                <h2>BNI United Coordinators</h2>
-                <span>{coordinatorCommittees.length} Roles</span>
-              </div>
-
-              <div className="committee-grid">
-                {pageCommittees.map((committee) => (
-                  <CommitteeRosterCard
-                    key={committee.id}
-                    committee={committee}
-                    assignments={assignmentsByCommittee[committee.id] ?? []}
-                    membersById={membersById}
-                  />
-                ))}
-              </div>
-
-              <div className="print-footer">
-                <span>BNI United · 2026 Chapter Roster</span>
-                <span>Page {currentPageNum} of {totalPrintPages}</span>
-              </div>
-            </div>
-          )
-        })}
-
         {/* ── LAST PAGE: BNI UNITED CONNECT ── */}
         <div className="print-page" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div className="screen-header">
-            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
+            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
           </div>
 
           <div className="cover-accent-top" />

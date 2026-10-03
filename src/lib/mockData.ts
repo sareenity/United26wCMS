@@ -841,14 +841,6 @@ export const MOCK_COMMITTEES: Committee[] = [
     "created_at": "2026-06-13T19:36:10.190Z"
   },
   {
-    "name": "PIO / OV",
-    "committee_group": "coordinator",
-    "coordinator_subgroup": "PIO / OV",
-    "sort_order": 20,
-    "id": "0e955549-c89c-4306-bf8d-3948d450f5c4",
-    "created_at": "2026-06-13T19:36:10.190Z"
-  },
-  {
     "name": "Socials",
     "committee_group": "coordinator",
     "coordinator_subgroup": "Socials",
@@ -1214,27 +1206,6 @@ export const MOCK_COMMITTEE_MEMBERS: CommitteeMember[] = [
     "id": "f18c4512-573c-462c-97f0-23fe79078922",
     "committee_id": "6f29fefc-c2c2-4ce7-a436-86329109220b",
     "member_id": "159d92f8-5455-4a7e-aa5b-387c6f5875ad",
-    "role": "coordinator",
-    "created_at": "2026-06-13T19:36:10.194Z"
-  },
-  {
-    "id": "e02dc72c-bef6-491b-8cf6-c8ec00553603",
-    "committee_id": "0e955549-c89c-4306-bf8d-3948d450f5c4",
-    "member_id": "b960ce6f-7af2-49cb-9ee5-f2c60c7bea9e",
-    "role": "coordinator",
-    "created_at": "2026-06-13T19:36:10.194Z"
-  },
-  {
-    "id": "9cff73e8-398d-49a2-a09b-6f084f47b1f3",
-    "committee_id": "0e955549-c89c-4306-bf8d-3948d450f5c4",
-    "member_id": "192eea54-c210-456d-9423-be373c289d8b",
-    "role": "coordinator",
-    "created_at": "2026-06-13T19:36:10.194Z"
-  },
-  {
-    "id": "4f6d6ad8-0d5d-4d04-9274-1d8fcd6ebc56",
-    "committee_id": "0e955549-c89c-4306-bf8d-3948d450f5c4",
-    "member_id": "5cc7ac6f-1854-400c-9ea4-c2a17c672f5a",
     "role": "coordinator",
     "created_at": "2026-06-13T19:36:10.194Z"
   },

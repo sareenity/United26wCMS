@@ -594,10 +594,15 @@ export function MemberForm({ open, member, committees, assignments, onClose, onS
                         <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
-                      <Command>
+                    <PopoverContent
+                      align="start"
+                      sideOffset={6}
+                      collisionPadding={16}
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                    >
+                      <Command className="max-h-[min(72vh,34rem)]">
                         <CommandInput placeholder="Search coordinator roles…" />
-                        <CommandList>
+                        <CommandList className="max-h-[min(60vh,28rem)] overscroll-contain scroll-smooth pr-1 [scrollbar-gutter:stable]">
                           <CommandEmpty>No coordinator role found.</CommandEmpty>
                           <CommandGroup>
                             {coordinatorCommittees.map((committee) => {
@@ -615,6 +620,9 @@ export function MemberForm({ open, member, committees, assignments, onClose, onS
                             })}
                           </CommandGroup>
                         </CommandList>
+                        <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+                          {selectedCoordinatorCount} of {coordinatorCommittees.length} coordinator roles selected
+                        </div>
                       </Command>
                     </PopoverContent>
                   </Popover>

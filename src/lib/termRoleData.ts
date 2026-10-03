@@ -114,7 +114,7 @@ const ROLE_ROWS: RoleRow[] = [
   { name: "Lead VHT", owner: "Sahil", leads: ["Jayessh", "Shweta", "Sanikka"] },
   { name: "Venue Co-ordinator", owner: "Sahil", leads: ["Shweta"] },
   { name: "Visitor Orientation", owner: "Bhavana", leads: ["Pooja", "Anuja", "Nikhil", "Priyanka", "Shekhar", "Hardik"] },
-  { name: "Door Prize (Sync with FP?)", owner: "Sahil", leads: ["Sanikka", "Purva"] },
+  { name: "Door Prize", owner: "Sahil", leads: ["Sanikka", "Purva"] },
   { name: "Birthday", owner: "Rohit", leads: ["Poonam", "Tamanna"] },
   { name: "Growth Coordinator", owner: "Bhavana", leads: ["Hardik", "Khushbu"] },
   { name: "Retention Coordintor", owner: "Bhavana", leads: ["Pooja", "Rushi"] },
@@ -181,6 +181,37 @@ export interface TermRoleData {
   committeeMembers: CommitteeMember[]
   unmatchedNames: string[]
   inactiveAssignedNames: string[]
+  source: "database" | "workbook"
+}
+
+function roleKey(committee: Pick<Committee, "name" | "committee_group">) {
+  return `${committee.committee_group}:${committee.name.trim().replace(/\s+/g, " ").toLocaleLowerCase()}`
+}
+
+export function hasCurrentTermRoleCatalogue(committees: Committee[]) {
+  if (committees.length !== TERM_COMMITTEES.length) return false
+
+  const availableRoles = new Set(committees.map(roleKey))
+  return TERM_COMMITTEES.every((committee) => availableRoles.has(roleKey(committee)))
+}
+
+export function resolveTermRoleData(
+  sourceMembers: Member[],
+  sourceCommittees: Committee[],
+  sourceCommitteeMembers: CommitteeMember[],
+): TermRoleData {
+  if (!hasCurrentTermRoleCatalogue(sourceCommittees)) {
+    return applyTermRoleData(sourceMembers)
+  }
+
+  return {
+    members: sourceMembers,
+    committees: sourceCommittees,
+    committeeMembers: sourceCommitteeMembers,
+    unmatchedNames: [],
+    inactiveAssignedNames: [],
+    source: "database",
+  }
 }
 
 export function applyTermRoleData(sourceMembers: Member[]): TermRoleData {
@@ -246,5 +277,6 @@ export function applyTermRoleData(sourceMembers: Member[]): TermRoleData {
     committeeMembers,
     unmatchedNames: [...unmatched].sort(),
     inactiveAssignedNames: inactiveAssignedNames.sort(),
+    source: "workbook",
   }
 }

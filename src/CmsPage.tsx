@@ -5,7 +5,7 @@ import { MembersTable } from "@/components/cms/MembersTable"
 import { MemberForm } from "@/components/cms/MemberForm"
 import { isAuthenticated, getCommitteeData, getMembers } from "@/lib/cmsApi"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
-import { applyTermRoleData } from "@/lib/termRoleData"
+import { resolveTermRoleData } from "@/lib/termRoleData"
 
 export default function CmsPage() {
   const [authed, setAuthed] = useState(isAuthenticated())
@@ -24,25 +24,26 @@ export default function CmsPage() {
         getMembers(),
         getCommitteeData(),
       ])
-      if (import.meta.env.DEV) {
-        const preview = applyTermRoleData(memberData)
-        setMembers(preview.members)
-        setCommittees(preview.committees)
-        setCommitteeMembers(preview.committeeMembers)
-        const issues: string[] = []
-        if (preview.unmatchedNames.length > 0) {
-          issues.push(`Not found in CMS: ${preview.unmatchedNames.join(", ")}.`)
-        }
-        if (preview.inactiveAssignedNames.length > 0) {
-          issues.push(`Assigned but inactive: ${preview.inactiveAssignedNames.join(", ")}.`)
-        }
-        setSyncIssues(issues)
-      } else {
-        setMembers(memberData)
-        setCommittees(committeeData.committees)
-        setCommitteeMembers(committeeData.committeeMembers)
-        setSyncIssues([])
+      const rosterData = resolveTermRoleData(
+        memberData,
+        committeeData.committees,
+        committeeData.committeeMembers,
+      )
+      setMembers(rosterData.members)
+      setCommittees(rosterData.committees)
+      setCommitteeMembers(rosterData.committeeMembers)
+
+      const issues: string[] = []
+      if (rosterData.source === "workbook") {
+        issues.push("Workbook role mapping preview active; apply the included database migration before publishing role changes.")
       }
+      if (rosterData.unmatchedNames.length > 0) {
+        issues.push(`Not found in CMS: ${rosterData.unmatchedNames.join(", ")}.`)
+      }
+      if (rosterData.inactiveAssignedNames.length > 0) {
+        issues.push(`Assigned but inactive: ${rosterData.inactiveAssignedNames.join(", ")}.`)
+      }
+      setSyncIssues(issues)
     } catch {
       // Leave existing data in place on error
     } finally {

@@ -13,7 +13,7 @@ import { Footer } from "@/components/Footer"
 import { Loader2, AlertCircle } from "lucide-react"
 import { matchMember } from "@/lib/search"
 import { sortMembersBySurname } from "@/lib/utils"
-import { applyTermRoleData } from "@/lib/termRoleData"
+import { resolveTermRoleData } from "@/lib/termRoleData"
 
 
 export default function App() {
@@ -39,16 +39,14 @@ export default function App() {
         if (committeesRes.error) throw committeesRes.error
         if (cmRes.error) throw cmRes.error
 
-        if (import.meta.env.DEV) {
-          const preview = applyTermRoleData(membersRes.data as Member[])
-          setMembers(preview.members)
-          setCommittees(preview.committees)
-          setCommitteeMembers(preview.committeeMembers)
-        } else {
-          setMembers(membersRes.data as Member[])
-          setCommittees(committeesRes.data as Committee[])
-          setCommitteeMembers(cmRes.data as CommitteeMember[])
-        }
+        const rosterData = resolveTermRoleData(
+          membersRes.data as Member[],
+          committeesRes.data as Committee[],
+          cmRes.data as CommitteeMember[],
+        )
+        setMembers(rosterData.members)
+        setCommittees(rosterData.committees)
+        setCommitteeMembers(rosterData.committeeMembers)
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to load data")
       } finally {
