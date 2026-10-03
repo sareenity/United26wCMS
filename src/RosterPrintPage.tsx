@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react"
-import type { Member } from "@/lib/types"
+import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
 import { Crown, Star, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { applyTermRoleData } from "@/lib/termRoleData"
 
 // BNI brand red (official digital BNI Red hex: #CF2030)
 const R = "#CF2030"
 
 const CONTACT = {
-  email: "bniuniteditdc@gmail.com",
+  email: "bniunitedlt@gmail.com",
   instagram: "bniunitedmumbai",
   instagramUrl: "https://www.instagram.com/bniunitedmumbai/",
   linkedin: "BNI United",
@@ -125,6 +126,16 @@ const PRINT_CSS = `
   .roster-table tr:nth-child(even) td {
     background: #fdfdfd;
   }
+
+  /* committee and coordinator pages */
+  .committee-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .committee-card { border: 1px solid #e8e8e8; border-radius: 6px; padding: 10px; break-inside: avoid; }
+  .committee-card h3 { color: ${R}; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+  .committee-member-list { display: flex; flex-direction: column; gap: 4px; }
+  .committee-member-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; border-top: 1px solid #f1f1f1; padding-top: 4px; }
+  .committee-member-name { color: #222; font-size: 10.5px; font-weight: 600; }
+  .committee-member-role { color: #777; font-size: 9px; text-align: right; }
+  .committee-empty { color: #999; font-size: 10px; }
 
   /* contact page */
   .contact-item { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -343,20 +354,80 @@ function StaffCard({ member }: { member: Member }) {
   )
 }
 
+function CommitteeRosterCard({
+  committee,
+  assignments,
+  membersById,
+}: {
+  committee: Committee
+  assignments: CommitteeMember[]
+  membersById: Record<string, Member>
+}) {
+  const visibleAssignments = assignments
+    .filter((assignment) => membersById[assignment.member_id])
+    .sort((a, b) => {
+      const first = membersById[a.member_id]
+      const second = membersById[b.member_id]
+      return `${first.last_name} ${first.first_name}`.localeCompare(`${second.last_name} ${second.first_name}`)
+    })
+
+  return (
+    <div className="committee-card">
+      <h3>{committee.name}</h3>
+      {visibleAssignments.length > 0 ? (
+        <div className="committee-member-list">
+          {visibleAssignments.map((assignment) => {
+            const member = membersById[assignment.member_id]
+            return (
+              <div key={assignment.id} className="committee-member-row">
+                <span className="committee-member-name">{member.first_name} {member.last_name}</span>
+                {assignment.role !== "member" && assignment.role !== "coordinator" && (
+                  <span className="committee-member-role">{assignment.role}</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="committee-empty">No members assigned</p>
+      )}
+    </div>
+  )
+}
+
 export default function RosterPrintPage() {
   const [members, setMembers] = useState<Member[]>([])
+  const [committees, setCommittees] = useState<Committee[]>([])
+  const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>([])
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function loadMembers() {
+    async function loadRoster() {
       const stored = localStorage.getItem("roster-pdf-members")
       if (stored) {
         try {
-          const parsed = JSON.parse(stored)
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            setMembers(parsed)
+          const parsed = JSON.parse(stored) as {
+            members?: Member[]
+            committees?: Committee[]
+            committeeMembers?: CommitteeMember[]
+          }
+          if (
+            Array.isArray(parsed.members)
+            && Array.isArray(parsed.committees)
+            && Array.isArray(parsed.committeeMembers)
+          ) {
+            if (import.meta.env.DEV) {
+              const preview = applyTermRoleData(parsed.members)
+              setMembers(preview.members)
+              setCommittees(preview.committees)
+              setCommitteeMembers(preview.committeeMembers)
+            } else {
+              setMembers(parsed.members)
+              setCommittees(parsed.committees)
+              setCommitteeMembers(parsed.committeeMembers)
+            }
             localStorage.removeItem("roster-pdf-members")
             setReady(true)
             return
@@ -369,27 +440,36 @@ export default function RosterPrintPage() {
       // Fallback: Fetch directly from Supabase for public access
       setLoading(true)
       try {
-        const { data, error: fetchErr } = await supabase
-          .from("members")
-          .select("*")
-          .order("sort_order")
-        
-        if (fetchErr) {
-          throw fetchErr
+        const [membersResult, committeesResult, assignmentsResult] = await Promise.all([
+          supabase.from("members").select("*").order("sort_order"),
+          supabase.from("committees").select("*").order("sort_order"),
+          supabase.from("committee_members").select("*"),
+        ])
+
+        if (membersResult.error) throw membersResult.error
+        if (committeesResult.error) throw committeesResult.error
+        if (assignmentsResult.error) throw assignmentsResult.error
+
+        if (import.meta.env.DEV) {
+          const preview = applyTermRoleData((membersResult.data ?? []) as Member[])
+          setMembers(preview.members)
+          setCommittees(preview.committees)
+          setCommitteeMembers(preview.committeeMembers)
+        } else {
+          setMembers((membersResult.data ?? []) as Member[])
+          setCommittees((committeesResult.data ?? []) as Committee[])
+          setCommitteeMembers((assignmentsResult.data ?? []) as CommitteeMember[])
         }
-        if (data) {
-          setMembers(data)
-        }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching members for roster print:", err)
-        setError(err.message || "Failed to load chapter roster.")
+        setError(err instanceof Error ? err.message : "Failed to load chapter roster.")
       } finally {
         setLoading(false)
         setReady(true)
       }
     }
 
-    loadMembers()
+    loadRoster()
   }, [])
 
   useEffect(() => {
@@ -406,6 +486,19 @@ export default function RosterPrintPage() {
   // Chapter roster contains all active members except support
   const rosterMembers = activeMembers.filter((m) => m.chapter_role !== "support")
   const sortedRoster = sortMembersBySurname(rosterMembers)
+  const membersById = Object.fromEntries(activeMembers.map((member) => [member.id, member]))
+  const activeCommitteeMembers = committeeMembers.filter((assignment) => membersById[assignment.member_id])
+  const assignmentsByCommittee = activeCommitteeMembers.reduce<Record<string, CommitteeMember[]>>((map, assignment) => {
+    if (!map[assignment.committee_id]) map[assignment.committee_id] = []
+    map[assignment.committee_id].push(assignment)
+    return map
+  }, {})
+  const mainCommittees = committees
+    .filter((committee) => committee.committee_group === "membership" || committee.committee_group === "visitor_host")
+    .sort((a, b) => a.sort_order - b.sort_order)
+  const coordinatorCommittees = committees
+    .filter((committee) => committee.committee_group === "coordinator")
+    .sort((a, b) => a.sort_order - b.sort_order)
 
   // Chunk the roster to fit cleanly on pages (12 members per page)
   const MEMBERS_PER_PAGE = 12
@@ -414,7 +507,14 @@ export default function RosterPrintPage() {
     chunkedRoster.push(sortedRoster.slice(i, i + MEMBERS_PER_PAGE))
   }
 
-  const totalPrintPages = 1 + chunkedRoster.length + 1 // Support/Leadership + Roster Pages + Connect Page
+  const COORDINATORS_PER_PAGE = 10
+  const chunkedCoordinators: Committee[][] = []
+  for (let i = 0; i < coordinatorCommittees.length; i += COORDINATORS_PER_PAGE) {
+    chunkedCoordinators.push(coordinatorCommittees.slice(i, i + COORDINATORS_PER_PAGE))
+  }
+
+  const mainCommitteePageCount = mainCommittees.length > 0 ? 1 : 0
+  const totalPrintPages = 1 + chunkedRoster.length + mainCommitteePageCount + chunkedCoordinators.length + 1
   const generatedDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
 
   if (loading || !ready) {
@@ -622,6 +722,69 @@ export default function RosterPrintPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="print-footer">
+                <span>BNI United · 2026 Chapter Roster</span>
+                <span>Page {currentPageNum} of {totalPrintPages}</span>
+              </div>
+            </div>
+          )
+        })}
+
+        {mainCommittees.length > 0 && (
+          <div className="print-page">
+            <div className="screen-header">
+              <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+              <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+            </div>
+
+            <div className="section-header">
+              <h2>Committees and Visitor Hosts</h2>
+              <span>{mainCommittees.length} Teams</span>
+            </div>
+
+            <div className="committee-grid">
+              {mainCommittees.map((committee) => (
+                <CommitteeRosterCard
+                  key={committee.id}
+                  committee={committee}
+                  assignments={assignmentsByCommittee[committee.id] ?? []}
+                  membersById={membersById}
+                />
+              ))}
+            </div>
+
+            <div className="print-footer">
+              <span>BNI United · 2026 Chapter Roster</span>
+              <span>Page {2 + chunkedRoster.length} of {totalPrintPages}</span>
+            </div>
+          </div>
+        )}
+
+        {chunkedCoordinators.map((pageCommittees, pageIdx) => {
+          const currentPageNum = 2 + chunkedRoster.length + mainCommitteePageCount + pageIdx
+          return (
+            <div key={`coordinators-${pageIdx}`} className="print-page">
+              <div className="screen-header">
+                <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" />
+                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" />
+              </div>
+
+              <div className="section-header">
+                <h2>BNI United Coordinators</h2>
+                <span>{coordinatorCommittees.length} Roles</span>
+              </div>
+
+              <div className="committee-grid">
+                {pageCommittees.map((committee) => (
+                  <CommitteeRosterCard
+                    key={committee.id}
+                    committee={committee}
+                    assignments={assignmentsByCommittee[committee.id] ?? []}
+                    membersById={membersById}
+                  />
+                ))}
               </div>
 
               <div className="print-footer">

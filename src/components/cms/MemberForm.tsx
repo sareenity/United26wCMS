@@ -21,11 +21,37 @@ import {
 import { Switch } from "@/components/ui/switch"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
-import { Loader2, Upload, AlertCircle } from "lucide-react"
+import { AlertCircle, Check, ChevronsUpDown, Loader2, Upload } from "lucide-react"
 import { PhotoCropper } from "./PhotoCropper"
-import { addMember, updateMember, uploadPhoto } from "@/lib/cmsApi"
-import type { Member } from "@/lib/types"
+import { saveMember, updateMember, uploadPhoto } from "@/lib/cmsApi"
+import { cn } from "@/lib/utils"
+import type {
+  Committee,
+  CommitteeAssignmentInput,
+  CommitteeMember,
+  Member,
+} from "@/lib/types"
 
 const schema = z.object({
   first_name: z.string().min(1, "Required"),
@@ -48,15 +74,17 @@ type FormValues = z.infer<typeof schema>
 interface MemberFormProps {
   open: boolean
   member: Member | null
+  committees: Committee[]
+  assignments: CommitteeMember[]
   onClose: () => void
-  onSaved: (member: Member) => void
+  onSaved: (member: Member, assignments: CommitteeMember[]) => void
 }
 
 function nullify(v: string | undefined): string | null {
   return v?.trim() || null
 }
 
-export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) {
+export function MemberForm({ open, member, committees, assignments, onClose, onSaved }: MemberFormProps) {
   const isEdit = !!member
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +92,10 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
   const [pendingBlob, setPendingBlob] = useState<Blob | null>(null)
   const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [cropOpen, setCropOpen] = useState(false)
+  const [selectedCommitteeIds, setSelectedCommitteeIds] = useState<string[]>([])
+  const [coordinatorPickerOpen, setCoordinatorPickerOpen] = useState(false)
+  const [roleWarningOpen, setRoleWarningOpen] = useState(false)
+  const [pendingValues, setPendingValues] = useState<FormValues | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
@@ -116,8 +148,12 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
       setPendingBlob(null)
       setCropSrc(null)
       setError(null)
+      setSelectedCommitteeIds(assignments.map((assignment) => assignment.committee_id))
+      setCoordinatorPickerOpen(false)
+      setRoleWarningOpen(false)
+      setPendingValues(null)
     }
-  }, [open, member, reset])
+  }, [open, member, assignments, reset])
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -140,7 +176,41 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
   const lastNameVal = watch("last_name")
   const initials = `${firstNameVal?.[0] ?? ""}${lastNameVal?.[0] ?? ""}`.toUpperCase()
 
-  async function onSubmit(values: FormValues) {
+  const membershipCommittee = committees.find((committee) => committee.committee_group === "membership")
+  const visitorHostCommittee = committees.find((committee) => committee.committee_group === "visitor_host")
+  const coordinatorCommittees = committees
+    .filter((committee) => committee.committee_group === "coordinator")
+    .sort((a, b) => a.sort_order - b.sort_order)
+  const selectedCoordinatorCount = selectedCommitteeIds.filter((id) =>
+    coordinatorCommittees.some((committee) => committee.id === id),
+  ).length
+
+  function setCommitteeSelected(committeeId: string, selected: boolean) {
+    setSelectedCommitteeIds((current) => selected
+      ? Array.from(new Set([...current, committeeId]))
+      : current.filter((id) => id !== committeeId))
+  }
+
+  function getAssignmentInputs(): CommitteeAssignmentInput[] {
+    const existingRoles = Object.fromEntries(
+      assignments.map((assignment) => [assignment.committee_id, assignment.role]),
+    )
+
+    return selectedCommitteeIds.map((committeeId) => {
+      const committee = committees.find((item) => item.id === committeeId)
+      const defaultRole = committee?.committee_group === "visitor_host"
+        ? "Visitor Host"
+        : committee?.committee_group === "coordinator"
+          ? "coordinator"
+          : "member"
+      return {
+        committee_id: committeeId,
+        role: existingRoles[committeeId] ?? defaultRole,
+      }
+    })
+  }
+
+  async function persistMember(values: FormValues) {
     setSaving(true)
     setError(null)
     try {
@@ -164,29 +234,42 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
       }
 
       let saved: Member
+      let savedAssignments: CommitteeMember[]
       if (isEdit && member) {
         // Upload photo first if changed (use member id as filename)
         if (pendingBlob) {
           photoUrl = await uploadPhoto(member.id, pendingBlob)
           memberData.photo_url = photoUrl
         }
-        saved = await updateMember(member.id, memberData)
+        const result = await saveMember(memberData, getAssignmentInputs(), member.id)
+        saved = result.member
+        savedAssignments = result.assignments
       } else {
-        // Insert member first (without photo), then upload with the new id
-        saved = await addMember(memberData)
+        const result = await saveMember(memberData, getAssignmentInputs())
+        saved = result.member
+        savedAssignments = result.assignments
         if (pendingBlob) {
           const url = await uploadPhoto(saved.id, pendingBlob)
           saved = await updateMember(saved.id, { photo_url: url })
         }
       }
 
-      onSaved(saved)
+      onSaved(saved, savedAssignments)
       onClose()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save member")
     } finally {
       setSaving(false)
     }
+  }
+
+  function onSubmit(values: FormValues) {
+    if (selectedCommitteeIds.length >= 5) {
+      setPendingValues(values)
+      setRoleWarningOpen(true)
+      return
+    }
+    void persistMember(values)
   }
 
   return (
@@ -401,9 +484,11 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
                         <SelectContent>
                           <SelectItem value="__none__">None</SelectItem>
                           <SelectItem value="Corporate">Corporate</SelectItem>
-                          <SelectItem value="Lifestyle & Wellness">Lifestyle &amp; Wellness</SelectItem>
+                          <SelectItem value="Marketing & Branding">Marketing &amp; Branding</SelectItem>
                           <SelectItem value="MSME">MSME</SelectItem>
-                          <SelectItem value="Property">Property</SelectItem>
+                          <SelectItem value="Real-Estate">Real-Estate</SelectItem>
+                          <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                          <SelectItem value="Wellness">Wellness</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
@@ -438,6 +523,114 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
                       <Switch checked={field.value} onCheckedChange={field.onChange} />
                     )}
                   />
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Committee and coordinator assignments */}
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Committee and Coordinator Assignments</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    A member can belong to both teams and any number of coordinator roles.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Membership Committee</Label>
+                    <Select
+                      value={membershipCommittee && selectedCommitteeIds.includes(membershipCommittee.id) ? "assigned" : "not-assigned"}
+                      onValueChange={(value) => {
+                        if (membershipCommittee) setCommitteeSelected(membershipCommittee.id, value === "assigned")
+                      }}
+                      disabled={!membershipCommittee}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-assigned">Not assigned</SelectItem>
+                        <SelectItem value="assigned">Assigned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-sm">Visitor Host Team</Label>
+                    <Select
+                      value={visitorHostCommittee && selectedCommitteeIds.includes(visitorHostCommittee.id) ? "assigned" : "not-assigned"}
+                      onValueChange={(value) => {
+                        if (visitorHostCommittee) setCommitteeSelected(visitorHostCommittee.id, value === "assigned")
+                      }}
+                      disabled={!visitorHostCommittee}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="not-assigned">Not assigned</SelectItem>
+                        <SelectItem value="assigned">Assigned</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm">Coordinator Roles</Label>
+                  <Popover open={coordinatorPickerOpen} onOpenChange={setCoordinatorPickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={coordinatorPickerOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        {selectedCoordinatorCount > 0
+                          ? `${selectedCoordinatorCount} coordinator role${selectedCoordinatorCount === 1 ? "" : "s"} selected`
+                          : "Select coordinator roles"}
+                        <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+                      <Command>
+                        <CommandInput placeholder="Search coordinator roles…" />
+                        <CommandList>
+                          <CommandEmpty>No coordinator role found.</CommandEmpty>
+                          <CommandGroup>
+                            {coordinatorCommittees.map((committee) => {
+                              const selected = selectedCommitteeIds.includes(committee.id)
+                              return (
+                                <CommandItem
+                                  key={committee.id}
+                                  value={committee.name}
+                                  onSelect={() => setCommitteeSelected(committee.id, !selected)}
+                                >
+                                  <Check className={cn("size-4", selected ? "opacity-100" : "opacity-0")} />
+                                  {committee.name}
+                                </CommandItem>
+                              )
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {coordinatorCommittees
+                      .filter((committee) => selectedCommitteeIds.includes(committee.id))
+                      .map((committee) => (
+                        <Badge key={committee.id} variant="secondary" className="font-normal">
+                          {committee.name}
+                        </Badge>
+                      ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedCommitteeIds.length} total committee and coordinator role{selectedCommitteeIds.length === 1 ? "" : "s"} selected.
+                    Selecting 5 or more requires confirmation when saving.
+                  </p>
                 </div>
               </div>
 
@@ -484,6 +677,38 @@ export function MemberForm({ open, member, onClose, onSaved }: MemberFormProps) 
           onCancel={() => { setCropOpen(false); setCropSrc(null) }}
         />
       )}
+
+      <AlertDialog open={roleWarningOpen} onOpenChange={setRoleWarningOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm {selectedCommitteeIds.length} assignments</AlertDialogTitle>
+            <AlertDialogDescription>
+              This member will have five or more committee and coordinator roles. Please confirm that this workload is intentional.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex max-h-40 flex-wrap gap-1.5 overflow-y-auto">
+            {committees
+              .filter((committee) => selectedCommitteeIds.includes(committee.id))
+              .map((committee) => (
+                <Badge key={committee.id} variant="secondary" className="font-normal">
+                  {committee.name}
+                </Badge>
+              ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingValues(null)}>Go back</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const values = pendingValues
+                setPendingValues(null)
+                if (values) void persistMember(values)
+              }}
+            >
+              Accept and save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

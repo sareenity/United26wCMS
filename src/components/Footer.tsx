@@ -33,11 +33,11 @@ export function Footer() {
             <p className="text-background/40 text-xs uppercase tracking-widest font-semibold">Connect</p>
             <div className="flex flex-col gap-3">
               <a
-                href="mailto:bniuniteditdc@gmail.com"
+                href="mailto:bniunitedlt@gmail.com"
                 className="flex items-center gap-2.5 text-sm text-background/70 hover:text-primary transition-colors group"
               >
                 <Mail size={16} className="shrink-0 group-hover:text-primary" />
-                bniuniteditdc@gmail.com
+                bniunitedlt@gmail.com
               </a>
               <a
                 href="https://www.instagram.com/bniunitedmumbai/"

@@ -36,11 +36,13 @@ import {
 } from "@/components/ui/tooltip"
 import { Pencil, ArchiveX, ArchiveRestore, Plus, Search, FileDown } from "lucide-react"
 import { softDeleteMember, restoreMember } from "@/lib/cmsApi"
-import type { Member } from "@/lib/types"
+import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
 
 interface MembersTableProps {
   members: Member[]
+  committees: Committee[]
+  committeeMembers: CommitteeMember[]
   loading: boolean
   onAdd: () => void
   onEdit: (member: Member) => void
@@ -60,12 +62,24 @@ const ROLE_VARIANTS: Record<Member["chapter_role"], "default" | "secondary" | "o
   support: "secondary",
 }
 
-export function MembersTable({ members, loading, onAdd, onEdit, onRefresh, onDownloadPDF }: MembersTableProps) {
+export function MembersTable({ members, committees, committeeMembers, loading, onAdd, onEdit, onRefresh, onDownloadPDF }: MembersTableProps) {
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [confirmDeactivate, setConfirmDeactivate] = useState<Member | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  const assignmentNamesByMember = useMemo(() => {
+    const committeeNames = Object.fromEntries(committees.map((committee) => [committee.id, committee.name]))
+    const map: Record<string, string[]> = {}
+    for (const assignment of committeeMembers) {
+      const committeeName = committeeNames[assignment.committee_id]
+      if (!committeeName) continue
+      if (!map[assignment.member_id]) map[assignment.member_id] = []
+      map[assignment.member_id].push(committeeName)
+    }
+    return map
+  }, [committees, committeeMembers])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -186,6 +200,7 @@ export function MembersTable({ members, loading, onAdd, onEdit, onRefresh, onDow
               <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead className="hidden lg:table-cell">Company</TableHead>
               <TableHead className="hidden xl:table-cell">Power Team</TableHead>
+              <TableHead className="hidden 2xl:table-cell">Assignments</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right w-[96px]">Actions</TableHead>
@@ -200,6 +215,7 @@ export function MembersTable({ members, loading, onAdd, onEdit, onRefresh, onDow
                   <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
                   <TableCell className="hidden lg:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                   <TableCell className="hidden xl:table-cell"><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell className="hidden 2xl:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-16 rounded-full" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-14 rounded-full" /></TableCell>
                   <TableCell></TableCell>
@@ -207,7 +223,7 @@ export function MembersTable({ members, loading, onAdd, onEdit, onRefresh, onDow
               ))
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-12 text-muted-foreground text-sm">
+                <TableCell colSpan={9} className="text-center py-12 text-muted-foreground text-sm">
                   {search || roleFilter !== "all" || statusFilter !== "all"
                     ? "No members match your filters"
                     : "No members found"}
@@ -258,6 +274,24 @@ export function MembersTable({ members, loading, onAdd, onEdit, onRefresh, onDow
                       </Badge>
                     ) : (
                       <span className="text-muted-foreground text-sm">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden 2xl:table-cell">
+                    {assignmentNamesByMember[member.id]?.length ? (
+                      <div className="flex max-w-[240px] flex-wrap gap-1">
+                        {assignmentNamesByMember[member.id].slice(0, 2).map((name) => (
+                          <Badge key={name} variant="secondary" className="max-w-[105px] truncate text-[10px] font-normal">
+                            {name}
+                          </Badge>
+                        ))}
+                        {assignmentNamesByMember[member.id].length > 2 && (
+                          <Badge variant="outline" className="text-[10px] font-normal">
+                            +{assignmentNamesByMember[member.id].length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell>

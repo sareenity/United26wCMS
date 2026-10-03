@@ -13,6 +13,7 @@ import { Footer } from "@/components/Footer"
 import { Loader2, AlertCircle } from "lucide-react"
 import { matchMember } from "@/lib/search"
 import { sortMembersBySurname } from "@/lib/utils"
+import { applyTermRoleData } from "@/lib/termRoleData"
 
 
 export default function App() {
@@ -38,9 +39,16 @@ export default function App() {
         if (committeesRes.error) throw committeesRes.error
         if (cmRes.error) throw cmRes.error
 
-        setMembers(membersRes.data as Member[])
-        setCommittees(committeesRes.data as Committee[])
-        setCommitteeMembers(cmRes.data as CommitteeMember[])
+        if (import.meta.env.DEV) {
+          const preview = applyTermRoleData(membersRes.data as Member[])
+          setMembers(preview.members)
+          setCommittees(preview.committees)
+          setCommitteeMembers(preview.committeeMembers)
+        } else {
+          setMembers(membersRes.data as Member[])
+          setCommittees(committeesRes.data as Committee[])
+          setCommitteeMembers(cmRes.data as CommitteeMember[])
+        }
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Failed to load data")
       } finally {
@@ -77,9 +85,11 @@ export default function App() {
   const membersByTeam = useMemo(() => {
     const teams: Record<PowerTeamName, Member[]> = {
       Corporate: [],
-      "Lifestyle & Wellness": [],
+      "Marketing & Branding": [],
       MSME: [],
-      Property: [],
+      "Real-Estate": [],
+      Lifestyle: [],
+      Wellness: [],
     }
     for (const m of members) {
       if (m.power_team && m.power_team in teams) {

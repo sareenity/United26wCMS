@@ -5,10 +5,12 @@ import type { Member, PowerTeamName } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
 
 const POWER_TEAMS: { name: PowerTeamName; description: string }[] = [
-  { name: "Corporate", description: "Finance, HR, IT, Marketing, and professional services" },
-  { name: "Lifestyle & Wellness", description: "Health, fitness, wellness, and personal development" },
+  { name: "Corporate", description: "Corporate services and professional solutions" },
+  { name: "Marketing & Branding", description: "Marketing, branding, media, and creative services" },
   { name: "MSME", description: "Manufacturing, exports, logistics, and small business" },
-  { name: "Property", description: "Real estate, architecture, interiors, and construction" },
+  { name: "Real-Estate", description: "Real estate, architecture, interiors, and construction" },
+  { name: "Lifestyle", description: "Lifestyle, retail, hospitality, and personal services" },
+  { name: "Wellness", description: "Health, fitness, medical, and wellness services" },
 ]
 
 interface PowerTeamsSectionProps {

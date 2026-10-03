@@ -100,6 +100,30 @@ Deno.serve(async (req: Request) => {
         return json({ data })
       }
 
+      case "save-member": {
+        const { id, member, assignments = [] } = body
+        if (!member || !Array.isArray(assignments)) {
+          return json({ error: "Member details and assignments are required" }, 400)
+        }
+
+        const { data, error } = await supabase
+          .rpc("cms_save_member", {
+            p_member_id: id ?? null,
+            p_member: member,
+            p_assignments: assignments,
+          })
+          .single()
+        if (error) throw error
+
+        const { data: savedAssignments, error: assignmentsError } = await supabase
+          .from("committee_members")
+          .select("*")
+          .eq("member_id", data.id)
+        if (assignmentsError) throw assignmentsError
+
+        return json({ data, assignments: savedAssignments ?? [] })
+      }
+
       case "add-member": {
         const { member } = body
         const { data, error } = await supabase

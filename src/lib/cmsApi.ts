@@ -1,4 +1,11 @@
-import type { Member } from "./types"
+import { supabase } from "./supabase"
+import type {
+  Committee,
+  CommitteeAssignmentInput,
+  CommitteeData,
+  CommitteeMember,
+  Member,
+} from "./types"
 
 const TOKEN_KEY = "bni-cms-token"
 const EDGE_URL = "/api/cms-api"
@@ -57,6 +64,34 @@ export async function login(username: string, password: string): Promise<void> {
 export async function getMembers(): Promise<Member[]> {
   const data = await call<{ data: Member[] }>("get-members")
   return data.data
+}
+
+export async function getCommitteeData(): Promise<CommitteeData> {
+  const [committeesResult, membersResult] = await Promise.all([
+    supabase.from("committees").select("*").order("sort_order"),
+    supabase.from("committee_members").select("*"),
+  ])
+
+  if (committeesResult.error) throw committeesResult.error
+  if (membersResult.error) throw membersResult.error
+
+  return {
+    committees: (committeesResult.data ?? []) as Committee[],
+    committeeMembers: (membersResult.data ?? []) as CommitteeMember[],
+  }
+}
+
+export async function saveMember(
+  member: Partial<Member>,
+  assignments: CommitteeAssignmentInput[],
+  id?: string,
+): Promise<{ member: Member; assignments: CommitteeMember[] }> {
+  const data = await call<{ data: Member; assignments: CommitteeMember[] }>("save-member", {
+    id: id ?? null,
+    member,
+    assignments,
+  })
+  return { member: data.data, assignments: data.assignments }
 }
 
 export async function addMember(member: Partial<Member>): Promise<Member> {
