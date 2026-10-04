@@ -6,6 +6,11 @@ import type {
   CommitteeMember,
   Member,
 } from "./types"
+import {
+  normalizeChapterStatistics,
+  STATISTIC_REGIONS,
+  type ChapterStatisticsByRegion,
+} from "./statistics"
 
 const TOKEN_KEY = "bni-cms-token"
 const EDGE_URL = "/api/cms-api"
@@ -110,6 +115,19 @@ export async function softDeleteMember(id: string): Promise<void> {
 
 export async function restoreMember(id: string): Promise<void> {
   await call("restore-member", { id })
+}
+
+export async function getChapterStatistics(): Promise<ChapterStatisticsByRegion> {
+  const data = await call<{ data: unknown }>("get-statistics")
+  return normalizeChapterStatistics(data.data)
+}
+
+export async function saveChapterStatistics(
+  statistics: ChapterStatisticsByRegion,
+): Promise<ChapterStatisticsByRegion> {
+  const regions = STATISTIC_REGIONS.map((region) => statistics[region])
+  const data = await call<{ data: unknown }>("save-statistics", { statistics: regions })
+  return normalizeChapterStatistics(data.data)
 }
 
 export async function uploadPhoto(memberId: string, blob: Blob): Promise<string> {

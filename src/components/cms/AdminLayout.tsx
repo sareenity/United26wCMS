@@ -20,16 +20,24 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import { Users, LogOut } from "lucide-react"
+import { BarChart3, Users, LogOut } from "lucide-react"
 import { logout } from "@/lib/cmsApi"
 
 interface AdminLayoutProps {
   children: ReactNode
   onLogout: () => void
   breadcrumb?: string
+  activeSection: "members" | "statistics"
+  onSectionChange: (section: "members" | "statistics") => void
 }
 
-export function AdminLayout({ children, onLogout, breadcrumb = "Members" }: AdminLayoutProps) {
+export function AdminLayout({
+  children,
+  onLogout,
+  breadcrumb = "Members",
+  activeSection,
+  onSectionChange,
+}: AdminLayoutProps) {
   function handleLogout() {
     logout()
     onLogout()
@@ -59,9 +67,23 @@ export function AdminLayout({ children, onLogout, breadcrumb = "Members" }: Admi
         <SidebarContent className="pt-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton isActive tooltip="Members">
+              <SidebarMenuButton
+                isActive={activeSection === "members"}
+                tooltip="Members"
+                onClick={() => onSectionChange("members")}
+              >
                 <Users size={16} />
                 <span>Members</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={activeSection === "statistics"}
+                tooltip="Statistics"
+                onClick={() => onSectionChange("statistics")}
+              >
+                <BarChart3 size={16} />
+                <span>Statistics</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

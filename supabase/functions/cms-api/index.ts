@@ -62,6 +62,67 @@ function json(data: unknown, status = 200): Response {
   })
 }
 
+const STATISTIC_REGIONS = ["worldwide", "india", "mumbai", "united"] as const
+
+type StatisticRegion = (typeof STATISTIC_REGIONS)[number]
+
+interface StatisticItem {
+  label: string
+  value: number
+  suffix: string
+}
+
+interface StatisticRecord {
+  region: StatisticRegion
+  summary: string
+  stats: StatisticItem[]
+}
+
+function validateStatistics(input: unknown): StatisticRecord[] | null {
+  if (!Array.isArray(input) || input.length !== STATISTIC_REGIONS.length) return null
+
+  const records: StatisticRecord[] = []
+  for (const item of input) {
+    if (!item || typeof item !== "object") return null
+    const candidate = item as Record<string, unknown>
+    if (
+      typeof candidate.region !== "string"
+      || !STATISTIC_REGIONS.includes(candidate.region as StatisticRegion)
+      || typeof candidate.summary !== "string"
+      || !candidate.summary.trim()
+      || candidate.summary.length > 500
+      || !Array.isArray(candidate.stats)
+      || candidate.stats.length !== 4
+    ) return null
+
+    const stats: StatisticItem[] = []
+    for (const stat of candidate.stats) {
+      if (!stat || typeof stat !== "object") return null
+      const value = stat as Record<string, unknown>
+      if (
+        typeof value.label !== "string"
+        || !value.label.trim()
+        || value.label.length > 80
+        || typeof value.value !== "number"
+        || !Number.isSafeInteger(value.value)
+        || value.value < 0
+        || typeof value.suffix !== "string"
+        || value.suffix.length > 20
+      ) return null
+      stats.push({ label: value.label.trim(), value: value.value, suffix: value.suffix.trim() })
+    }
+
+    records.push({
+      region: candidate.region as StatisticRegion,
+      summary: candidate.summary.trim(),
+      stats,
+    })
+  }
+
+  if (new Set(records.map((record) => record.region)).size !== STATISTIC_REGIONS.length) return null
+  return records
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders })
@@ -96,6 +157,32 @@ Deno.serve(async (req: Request) => {
           .from("members")
           .select("*")
           .order("sort_order")
+        if (error) throw error
+        return json({ data })
+      }
+
+      case "get-statistics": {
+        const { data, error } = await supabase
+          .from("chapter_statistics")
+          .select("region, summary, stats, updated_at")
+        if (error) throw error
+        return json({ data })
+      }
+
+      case "save-statistics": {
+        const statistics = validateStatistics(body.statistics)
+        if (!statistics) {
+          return json({ error: "All four statistic groups and their four valid statistics are required" }, 400)
+        }
+
+        const updatedAt = new Date().toISOString()
+        const { data, error } = await supabase
+          .from("chapter_statistics")
+          .upsert(
+            statistics.map((record) => ({ ...record, updated_at: updatedAt })),
+            { onConflict: "region" },
+          )
+          .select("region, summary, stats, updated_at")
         if (error) throw error
         return json({ data })
       }

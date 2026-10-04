@@ -5,6 +5,12 @@ import {
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent } from "@/components/ui/card"
+import { supabase } from "@/lib/supabase"
+import {
+  cloneDefaultChapterStatistics,
+  normalizeChapterStatistics,
+  type StatisticItem,
+} from "@/lib/statistics"
 
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0)
@@ -12,6 +18,8 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   const hasAnimated = useRef(false)
 
   useEffect(() => {
+    setCount(0)
+    hasAnimated.current = false
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
@@ -49,39 +57,11 @@ const CORE_VALUES = [
   { icon: Award, label: "Recognition", desc: "Recognise others and be recognised. Appreciation drives performance." },
 ]
 
-const WORLD_STATS = [
-  { label: "Members Worldwide", value: 355582, suffix: "+" },
-  { label: "Chapters", value: 11728, suffix: "+" },
-  { label: "Countries", value: 76, suffix: "+" },
-  { label: "Referrals (Millions)", value: 17, suffix: ".9M+" },
-]
-
-const INDIA_STATS = [
-  { label: "Members in India", value: 72513, suffix: "+" },
-  { label: "Chapters in India", value: 1498, suffix: "+" },
-  { label: "Cities", value: 143, suffix: "+" },
-  { label: "Business (Crores)", value: 55770, suffix: "+" },
-]
-
-const MUMBAI_STATS = [
-  { label: "Members in Mumbai", value: 5976, suffix: "+" },
-  { label: "Chapters in Mumbai", value: 117, suffix: "+" },
-  { label: "Referrals", value: 312434, suffix: "+" },
-  { label: "Business (Crores)", value: 3656, suffix: "+" },
-]
-
-const UNITED_STATS = [
-  { label: "Referrals", value: 3224, suffix: "+" },
-  { label: "1-2-1 Done", value: 2224, suffix: "+" },
-  { label: "Visitors", value: 270, suffix: "+" },
-  { label: "Active Members", value: 41, suffix: "" },
-]
-
-function StatGrid({ stats }: { stats: typeof WORLD_STATS }) {
+function StatGrid({ stats }: { stats: StatisticItem[] }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {stats.map((s) => (
-        <Card key={s.label} className="border border-border">
+      {stats.map((s, index) => (
+        <Card key={`${s.label}-${index}`} className="border border-border">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold text-primary mb-1">
               <AnimatedCounter target={s.value} suffix={s.suffix} />
@@ -95,6 +75,25 @@ function StatGrid({ stats }: { stats: typeof WORLD_STATS }) {
 }
 
 export function StatsSection() {
+  const [statistics, setStatistics] = useState(cloneDefaultChapterStatistics)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadStatistics() {
+      const { data, error } = await supabase
+        .from("chapter_statistics")
+        .select("region, summary, stats, updated_at")
+
+      if (!error && active) {
+        setStatistics(normalizeChapterStatistics(data))
+      }
+    }
+
+    void loadStatistics()
+    return () => { active = false }
+  }, [])
+
   return (
     <section id="stats" className="bg-secondary/30 py-14 md:py-20">
       <div className="max-w-7xl mx-auto px-4">
@@ -131,33 +130,33 @@ export function StatsSection() {
           <TabsContent value="world">
             <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
               <Globe size={16} className="text-primary" />
-              <span>BNI generated $26.09 Billion in the last 12 months with 17.9 Million referrals worldwide</span>
+              <span>{statistics.worldwide.summary}</span>
             </div>
-            <StatGrid stats={WORLD_STATS} />
+            <StatGrid stats={statistics.worldwide.stats} />
           </TabsContent>
 
           <TabsContent value="india">
             <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin size={16} className="text-primary" />
-              <span>BNI India generated 55,770 Crores in the last 12 months with 49,31,926 referrals</span>
+              <span>{statistics.india.summary}</span>
             </div>
-            <StatGrid stats={INDIA_STATS} />
+            <StatGrid stats={statistics.india.stats} />
           </TabsContent>
 
           <TabsContent value="mumbai">
             <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
               <Building2 size={16} className="text-primary" />
-              <span>BNI Mumbai generated 3656 Crores in the last 12 months with 3,12,434+ referrals</span>
+              <span>{statistics.mumbai.summary}</span>
             </div>
-            <StatGrid stats={MUMBAI_STATS} />
+            <StatGrid stats={statistics.mumbai.stats} />
           </TabsContent>
 
           <TabsContent value="chapter">
             <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
               <LifeBuoy size={16} className="text-primary" />
-              <span>BNI United has generated 21,35,04,308 Crores in business till date</span>
+              <span>{statistics.united.summary}</span>
             </div>
-            <StatGrid stats={UNITED_STATS} />
+            <StatGrid stats={statistics.united.stats} />
           </TabsContent>
         </Tabs>
       </div>

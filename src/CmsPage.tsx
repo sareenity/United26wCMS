@@ -3,6 +3,7 @@ import { AdminLogin } from "@/components/cms/AdminLogin"
 import { AdminLayout } from "@/components/cms/AdminLayout"
 import { MembersTable } from "@/components/cms/MembersTable"
 import { MemberForm } from "@/components/cms/MemberForm"
+import { StatisticsEditor } from "@/components/cms/StatisticsEditor"
 import { isAuthenticated, getCommitteeData, getMembers } from "@/lib/cmsApi"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { resolveTermRoleData } from "@/lib/termRoleData"
@@ -16,6 +17,7 @@ export default function CmsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | null>(null)
   const [syncIssues, setSyncIssues] = useState<string[]>([])
+  const [activeSection, setActiveSection] = useState<"members" | "statistics">("members")
 
   const fetchMembers = useCallback(async () => {
     setLoadingMembers(true)
@@ -106,8 +108,13 @@ export default function CmsPage() {
   }
 
   return (
-    <AdminLayout onLogout={handleLogout}>
-      <div className="space-y-4">
+    <AdminLayout
+      onLogout={handleLogout}
+      activeSection={activeSection}
+      onSectionChange={setActiveSection}
+      breadcrumb={activeSection === "members" ? "Members" : "Statistics"}
+    >
+      {activeSection === "members" ? <div className="space-y-4">
         <div>
           <h1 className="text-xl font-semibold text-foreground">Members</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -130,18 +137,20 @@ export default function CmsPage() {
           onRefresh={fetchMembers}
           onDownloadPDF={handleDownloadPDF}
         />
-      </div>
+      </div> : <StatisticsEditor />}
 
-      <MemberForm
-        open={formOpen}
-        member={editingMember}
-        committees={committees}
-        assignments={editingMember
-          ? committeeMembers.filter((assignment) => assignment.member_id === editingMember.id)
-          : []}
-        onClose={() => setFormOpen(false)}
-        onSaved={handleSaved}
-      />
+      {activeSection === "members" && (
+        <MemberForm
+          open={formOpen}
+          member={editingMember}
+          committees={committees}
+          assignments={editingMember
+            ? committeeMembers.filter((assignment) => assignment.member_id === editingMember.id)
+            : []}
+          onClose={() => setFormOpen(false)}
+          onSaved={handleSaved}
+        />
+      )}
     </AdminLayout>
   )
 }
