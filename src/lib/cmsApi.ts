@@ -1,4 +1,4 @@
-import { supabase } from "./supabase"
+import { supabase, supabaseAnonKey } from "./supabase"
 import type {
   Committee,
   CommitteeAssignmentInput,
@@ -42,7 +42,7 @@ async function call<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+    Authorization: `Bearer ${supabaseAnonKey}`,
   }
   if (requiresAuth) {
     const token = getToken()

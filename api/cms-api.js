@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://ggawbtjxewjmtbmvjpiw.supabase.co';
+  const supabaseUrl = 'https://qttuvwyggpgqhfydbxvg.supabase.co';
   const targetUrl = `${supabaseUrl}/functions/v1/cms-api`;
 
   try {

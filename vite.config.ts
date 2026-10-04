@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api/cms-api": {
-        target: "https://ggawbtjxewjmtbmvjpiw.supabase.co",
+        target: "https://qttuvwyggpgqhfydbxvg.supabase.co",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/cms-api/, "/functions/v1/cms-api"),
       },

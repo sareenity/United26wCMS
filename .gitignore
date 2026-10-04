@@ -26,3 +26,5 @@ dist-ssr
 # Env
 .env
 
+# Supabase CLI state
+supabase/.temp/
