@@ -11,7 +11,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const supabaseUrl = 'https://qttuvwyggpgqhfydbxvg.supabase.co';
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    return res.status(503).json({ error: 'CMS service is not configured' });
+  }
   const targetUrl = `${supabaseUrl}/functions/v1/cms-api`;
 
   try {

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react"
-import { supabase } from "@/lib/supabase"
 import type { Member, Committee, CommitteeMember, PowerTeamName } from "@/lib/types"
+import { getPublicDirectory } from "@/lib/publicApi"
 import { Header } from "@/components/Header"
 import { HeroSection } from "@/components/HeroSection"
 import { StatsSection } from "@/components/StatsSection"
@@ -29,20 +29,12 @@ export default function App() {
   useEffect(() => {
     async function load() {
       try {
-        const [membersRes, committeesRes, cmRes] = await Promise.all([
-          supabase.from("members").select("*").order("sort_order"),
-          supabase.from("committees").select("*").order("sort_order"),
-          supabase.from("committee_members").select("*"),
-        ])
-
-        if (membersRes.error) throw membersRes.error
-        if (committeesRes.error) throw committeesRes.error
-        if (cmRes.error) throw cmRes.error
+        const directory = await getPublicDirectory()
 
         const rosterData = resolveTermRoleData(
-          membersRes.data as Member[],
-          committeesRes.data as Committee[],
-          cmRes.data as CommitteeMember[],
+          directory.members,
+          directory.committees,
+          directory.committeeMembers,
         )
         setMembers(rosterData.members)
         setCommittees(rosterData.committees)

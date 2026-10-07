@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { sortMembersBySurname } from "@/lib/utils"
 import { Crown, Star, Loader2 } from "lucide-react"
-import { supabase } from "@/lib/supabase"
+import { getPublicDirectory } from "@/lib/publicApi"
 import { resolveTermRoleData } from "@/lib/termRoleData"
 
 // BNI brand red (official digital BNI Red hex: #CF2030)
@@ -382,10 +382,12 @@ export default function RosterPrintPage() {
             && Array.isArray(parsed.committees)
             && Array.isArray(parsed.committeeMembers)
           ) {
+            const activeMembers = parsed.members.filter((member) => member.is_active)
+            const activeMemberIds = new Set(activeMembers.map((member) => member.id))
             const rosterData = resolveTermRoleData(
-              parsed.members,
+              activeMembers,
               parsed.committees,
-              parsed.committeeMembers,
+              parsed.committeeMembers.filter((assignment) => activeMemberIds.has(assignment.member_id)),
             )
             setMembers(rosterData.members)
             localStorage.removeItem("roster-pdf-members")
@@ -400,20 +402,12 @@ export default function RosterPrintPage() {
       // Fallback: Fetch directly from Supabase for public access
       setLoading(true)
       try {
-        const [membersResult, committeesResult, assignmentsResult] = await Promise.all([
-          supabase.from("members").select("*").order("sort_order"),
-          supabase.from("committees").select("*").order("sort_order"),
-          supabase.from("committee_members").select("*"),
-        ])
-
-        if (membersResult.error) throw membersResult.error
-        if (committeesResult.error) throw committeesResult.error
-        if (assignmentsResult.error) throw assignmentsResult.error
+        const directory = await getPublicDirectory()
 
         const rosterData = resolveTermRoleData(
-          (membersResult.data ?? []) as Member[],
-          (committeesResult.data ?? []) as Committee[],
-          (assignmentsResult.data ?? []) as CommitteeMember[],
+          directory.members,
+          directory.committees,
+          directory.committeeMembers,
         )
         setMembers(rosterData.members)
       } catch (err: unknown) {

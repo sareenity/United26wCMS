@@ -1,6 +1,5 @@
-import { supabase, supabaseAnonKey } from "./supabase"
+import { supabaseAnonKey, supabaseUrl } from "./supabase"
 import type {
-  Committee,
   CommitteeAssignmentInput,
   CommitteeData,
   CommitteeMember,
@@ -13,7 +12,7 @@ import {
 } from "./statistics"
 
 const TOKEN_KEY = "bni-cms-token"
-const EDGE_URL = "/api/cms-api"
+const EDGE_URL = `${supabaseUrl}/functions/v1/cms-api`
 
 function getToken(): string | null {
   return sessionStorage.getItem(TOKEN_KEY)
@@ -43,6 +42,7 @@ async function call<T>(
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${supabaseAnonKey}`,
+    apikey: supabaseAnonKey,
   }
   if (requiresAuth) {
     const token = getToken()
@@ -56,9 +56,30 @@ async function call<T>(
   })
   const data = await res.json()
   if (!res.ok || data.error) {
-    throw new Error(data.error ?? `Request failed (${res.status})`)
+    if (requiresAuth && res.status === 401) clearToken()
+    throw new CmsApiError(
+      data.error ?? `Request failed (${res.status})`,
+      res.status,
+      typeof data.retryAfterSeconds === "number" ? data.retryAfterSeconds : null,
+    )
   }
   return data as T
+}
+
+export class CmsApiError extends Error {
+  readonly status: number
+  readonly retryAfterSeconds: number | null
+
+  constructor(
+    message: string,
+    status: number,
+    retryAfterSeconds: number | null,
+  ) {
+    super(message)
+    this.name = "CmsApiError"
+    this.status = status
+    this.retryAfterSeconds = retryAfterSeconds
+  }
 }
 
 export async function login(username: string, password: string): Promise<void> {
@@ -72,18 +93,7 @@ export async function getMembers(): Promise<Member[]> {
 }
 
 export async function getCommitteeData(): Promise<CommitteeData> {
-  const [committeesResult, membersResult] = await Promise.all([
-    supabase.from("committees").select("*").order("sort_order"),
-    supabase.from("committee_members").select("*"),
-  ])
-
-  if (committeesResult.error) throw committeesResult.error
-  if (membersResult.error) throw membersResult.error
-
-  return {
-    committees: (committeesResult.data ?? []) as Committee[],
-    committeeMembers: (membersResult.data ?? []) as CommitteeMember[],
-  }
+  return call<CommitteeData>("get-committee-data")
 }
 
 export async function saveMember(
@@ -97,16 +107,6 @@ export async function saveMember(
     assignments,
   })
   return { member: data.data, assignments: data.assignments }
-}
-
-export async function addMember(member: Partial<Member>): Promise<Member> {
-  const data = await call<{ data: Member }>("add-member", { member })
-  return data.data
-}
-
-export async function updateMember(id: string, member: Partial<Member>): Promise<Member> {
-  const data = await call<{ data: Member }>("update-member", { id, member })
-  return data.data
 }
 
 export async function softDeleteMember(id: string): Promise<void> {

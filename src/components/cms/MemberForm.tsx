@@ -44,7 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, Check, ChevronsUpDown, Loader2, Upload } from "lucide-react"
 import { PhotoCropper } from "./PhotoCropper"
-import { saveMember, updateMember, uploadPhoto } from "@/lib/cmsApi"
+import { saveMember, uploadPhoto } from "@/lib/cmsApi"
 import { cn } from "@/lib/utils"
 import type {
   Committee,
@@ -244,13 +244,14 @@ export function MemberForm({ open, member, committees, assignments, onClose, onS
         const result = await saveMember(memberData, getAssignmentInputs(), member.id)
         saved = result.member
         savedAssignments = result.assignments
+        if (pendingBlob && photoUrl) saved = { ...saved, photo_url: photoUrl }
       } else {
         const result = await saveMember(memberData, getAssignmentInputs())
         saved = result.member
         savedAssignments = result.assignments
         if (pendingBlob) {
           const url = await uploadPhoto(saved.id, pendingBlob)
-          saved = await updateMember(saved.id, { photo_url: url })
+          saved = { ...saved, photo_url: url }
         }
       }
 

@@ -4,7 +4,7 @@ import { AdminLayout } from "@/components/cms/AdminLayout"
 import { MembersTable } from "@/components/cms/MembersTable"
 import { MemberForm } from "@/components/cms/MemberForm"
 import { StatisticsEditor } from "@/components/cms/StatisticsEditor"
-import { isAuthenticated, getCommitteeData, getMembers } from "@/lib/cmsApi"
+import { getCommitteeData, getMembers, isAuthenticated, logout } from "@/lib/cmsApi"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { resolveTermRoleData } from "@/lib/termRoleData"
 
@@ -47,7 +47,8 @@ export default function CmsPage() {
       }
       setSyncIssues(issues)
     } catch {
-      // Leave existing data in place on error
+      if (!isAuthenticated()) setAuthed(false)
+      // Leave existing data in place for transient non-authentication errors.
     } finally {
       setLoadingMembers(false)
     }
@@ -62,10 +63,12 @@ export default function CmsPage() {
   }
 
   function handleLogout() {
+    logout()
     setAuthed(false)
     setMembers([])
     setCommittees([])
     setCommitteeMembers([])
+    localStorage.removeItem("roster-pdf-members")
   }
 
   function openAdd() {
@@ -79,10 +82,12 @@ export default function CmsPage() {
   }
 
   function handleDownloadPDF() {
+    const activeMembers = members.filter((member) => member.is_active)
+    const activeMemberIds = new Set(activeMembers.map((member) => member.id))
     localStorage.setItem("roster-pdf-members", JSON.stringify({
-      members,
+      members: activeMembers,
       committees,
-      committeeMembers,
+      committeeMembers: committeeMembers.filter((assignment) => activeMemberIds.has(assignment.member_id)),
     }))
     window.open("/roster-pdf", "_blank", "noopener")
   }

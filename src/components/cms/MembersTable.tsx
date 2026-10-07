@@ -372,7 +372,8 @@ export function MembersTable({ members, committees, committeeMembers, loading, o
             <AlertDialogTitle>Deactivate member?</AlertDialogTitle>
             <AlertDialogDescription>
               {confirmDeactivate?.first_name} {confirmDeactivate?.last_name} will be marked as
-              inactive and hidden from the public directory. You can restore them at any time.
+              inactive and hidden from the public directory. Their public photo will be removed;
+              you can restore the contact later and upload a new photo.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

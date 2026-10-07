@@ -24,8 +24,8 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
     try {
       await login(username, password)
       onSuccess()
-    } catch {
-      setError("Invalid credentials. Please try again.")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Unable to sign in. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -66,13 +66,13 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
               <div className="space-y-1.5">
                 <Label htmlFor="username" className="text-sm">
-                  Username
+                  Admin email
                 </Label>
                 <Input
                   id="username"
-                  type="text"
+                  type="email"
                   autoComplete="username"
-                  placeholder="BNI-United@CMS-Admin"
+                  placeholder="admin@example.com"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
