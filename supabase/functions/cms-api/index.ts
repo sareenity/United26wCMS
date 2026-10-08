@@ -22,6 +22,7 @@ class ConfigurationError extends Error {}
 
 interface CmsConfig {
   adminEmail: string
+  adminUsername: string
   anonKey: string
   serviceRoleKey: string
   supabaseUrl: string
@@ -53,6 +54,7 @@ function requiredEnv(name: string): string {
 function getConfig(): CmsConfig {
   return {
     adminEmail: Deno.env.get("CMS_ADMIN_EMAIL")?.trim() ?? "",
+    adminUsername: Deno.env.get("CMS_ADMIN_USERNAME")?.trim() ?? "",
     anonKey: requiredEnv("SUPABASE_ANON_KEY"),
     serviceRoleKey: requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
     supabaseUrl: requiredEnv("SUPABASE_URL"),
@@ -248,7 +250,12 @@ Deno.serve(async (req: Request) => {
     if (action === "login") {
       const { username, password } = body
       const adminEmail = normalizeEmail(config.adminEmail)
-      const attemptedEmail = normalizeEmail(username)
+      const adminUsername = config.adminUsername.trim().toLowerCase()
+      const attemptedUsername = typeof username === "string" ? username.trim().toLowerCase() : ""
+      const authenticationEmail = attemptedUsername === adminEmail
+        || (adminUsername.length > 0 && attemptedUsername === adminUsername)
+        ? adminEmail
+        : null
       const clientAddress = getClientAddress(req.headers)
       const attemptIdentifier = await loginAttemptIdentifier(config.adminEmail, clientAddress)
 
@@ -263,9 +270,9 @@ Deno.serve(async (req: Request) => {
       }
 
       let authenticatedUserId: string | null = null
-      if (attemptedEmail && typeof password === "string" && password.length <= 1024) {
+      if (authenticationEmail && typeof password === "string" && password.length <= 1024) {
         const { data, error } = await authClient.auth.signInWithPassword({
-          email: attemptedEmail,
+          email: authenticationEmail,
           password,
         })
         if (!error && data.session && isAuthorizedAdmin(data.user?.email, adminEmail)) {

@@ -79,7 +79,9 @@ test("CMS authentication has no source-controlled login credentials", async () =
   const source = await readFile(sourceUrl, "utf8")
 
   assert.match(source, /Deno\.env\.get\("CMS_ADMIN_EMAIL"\)/)
+  assert.match(source, /Deno\.env\.get\("CMS_ADMIN_USERNAME"\)/)
   assert.match(source, /requiredEnv\("SUPABASE_SERVICE_ROLE_KEY"\)/)
   assert.doesNotMatch(source, /CMS_PASSWORD\s*=/)
   assert.doesNotMatch(source, /SESSION_SECRET\s*=/)
+  assert.doesNotMatch(source, /BNI-United@CMS-Admin/i)
 })

@@ -142,13 +142,13 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
               <div className="space-y-1.5">
                 <Label htmlFor="username" className="text-sm">
-                  Admin email
+                  Admin username or email
                 </Label>
                 <Input
                   id="username"
-                  type="email"
+                  type="text"
                   autoComplete="username"
-                  placeholder="admin@example.com"
+                  placeholder="Admin username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   readOnly={settingPassword}
