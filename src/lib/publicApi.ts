@@ -9,7 +9,6 @@ export async function getPublicDirectory(): Promise<PublicDirectoryData> {
   const response = await fetch(`${supabaseUrl}/functions/v1/cms-api`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${supabaseAnonKey}`,
       "Content-Type": "application/json",
       apikey: supabaseAnonKey,
     },

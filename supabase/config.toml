@@ -1,0 +1,2 @@
+[functions.cms-api]
+verify_jwt = false

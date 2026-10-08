@@ -41,7 +41,6 @@ async function call<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${supabaseAnonKey}`,
     apikey: supabaseAnonKey,
   }
   if (requiresAuth) {

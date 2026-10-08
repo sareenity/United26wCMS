@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-CMS-Token'
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, apikey, X-CMS-Token'
   );
 
   if (req.method === 'OPTIONS') {
@@ -20,8 +20,17 @@ export default async function handler(req, res) {
   try {
     const headers = {
       'Content-Type': 'application/json',
-      'Authorization': req.headers.authorization || '',
     };
+
+    const apiKey = req.headers.apikey;
+    if (apiKey) {
+      headers.apikey = apiKey;
+    }
+
+    const authorization = req.headers.authorization;
+    if (authorization) {
+      headers.Authorization = authorization;
+    }
 
     const token = req.headers['x-cms-token'];
     if (token) {

@@ -35,7 +35,9 @@ Configure `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and server-side `SUPABA
 
 ## 5. Deploy and verify
 
-Deploy the migration, Edge Function, and web app together. Verify that:
+Deploy the migration, Edge Function, and web app together. The committed `supabase/config.toml` disables the platform JWT check for `cms-api` because its public directory and login actions use the publishable API key, while every privileged action is protected inside the function by an opaque CMS session. When deploying manually, use the repository configuration or deploy `cms-api` with `--no-verify-jwt`.
+
+Verify that:
 
 1. A valid Supabase Auth administrator can sign in.
 2. Two failed attempts from one client address return `401`; the third returns `429`, starts a 30-minute client lock, and sends one alert email.
