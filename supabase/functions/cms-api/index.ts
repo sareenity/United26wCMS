@@ -52,18 +52,17 @@ function requiredEnv(name: string): string {
 
 function getConfig(): CmsConfig {
   return {
-    adminEmail: requiredEnv("CMS_ADMIN_EMAIL"),
+    adminEmail: Deno.env.get("CMS_ADMIN_EMAIL")?.trim() ?? "",
     anonKey: requiredEnv("SUPABASE_ANON_KEY"),
     serviceRoleKey: requiredEnv("SUPABASE_SERVICE_ROLE_KEY"),
     supabaseUrl: requiredEnv("SUPABASE_URL"),
   }
 }
 
-function getAlertConfig(): AlertConfig {
-  return {
-    resendApiKey: requiredEnv("RESEND_API_KEY"),
-    resendFromEmail: requiredEnv("RESEND_FROM_EMAIL"),
-  }
+function getAlertConfig(): AlertConfig | null {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY")?.trim()
+  const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL")?.trim()
+  return resendApiKey && resendFromEmail ? { resendApiKey, resendFromEmail } : null
 }
 
 function json(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
@@ -247,7 +246,6 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "login") {
-      const alertConfig = getAlertConfig()
       const { username, password } = body
       const adminEmail = normalizeEmail(config.adminEmail)
       const attemptedEmail = normalizeEmail(username)
@@ -303,16 +301,19 @@ Deno.serve(async (req: Request) => {
 
       if (failure.should_alert) {
         const lockedUntil = new Date(Date.now() + failure.retry_after_seconds * 1000).toISOString()
-        let notificationSent = true
-        try {
-          await sendLockoutAlert(config, alertConfig, req, lockedUntil)
-        } catch (alertError) {
-          notificationSent = false
-          console.error(alertError)
-          await supabase
-            .from("cms_login_attempts")
-            .update({ alert_attempted_at: null })
-            .eq("identifier", attemptIdentifier)
+        const alertConfig = getAlertConfig()
+        let notificationSent = false
+        if (alertConfig) {
+          try {
+            await sendLockoutAlert(config, alertConfig, req, lockedUntil)
+            notificationSent = true
+          } catch (alertError) {
+            console.error(alertError)
+            await supabase
+              .from("cms_login_attempts")
+              .update({ alert_attempted_at: null })
+              .eq("identifier", attemptIdentifier)
+          }
         }
         return lockedResponse(failure.retry_after_seconds, notificationSent)
       }
