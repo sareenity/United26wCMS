@@ -4,7 +4,7 @@ The CMS now uses Supabase Auth. No administrator password or session-signing key
 
 ## 1. Apply the database migration
 
-Apply `supabase/migrations/20261005001000_secure_cms_access.sql` to the production Supabase project. It creates service-role-only login-attempt and opaque CMS-session tables, and restricts anonymous committee assignments to active members.
+Apply the Supabase migrations in order, including `supabase/migrations/20261005001000_secure_cms_access.sql` and `supabase/migrations/20261007001000_restrict_direct_member_reads.sql`. They create service-role-only login-attempt and opaque CMS-session tables, restrict anonymous committee assignments to active members, and prevent browser-authenticated sessions from directly reading inactive member contacts.
 
 ## 2. Create the administrator
 

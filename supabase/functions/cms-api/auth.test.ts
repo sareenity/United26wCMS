@@ -63,3 +63,23 @@ test("database throttling matches the Edge Function policy", async () => {
   assert.match(migration, /REVOKE ALL ON TABLE public\.cms_sessions FROM PUBLIC, anon, authenticated/)
   assert.match(migration, /members\.is_active = true/)
 })
+
+test("inactive members are not directly readable by authenticated browser sessions", async () => {
+  const migrationUrl = new URL("../../migrations/20261007001000_restrict_direct_member_reads.sql", import.meta.url)
+  const migration = await readFile(migrationUrl, "utf8")
+
+  assert.match(migration, /REVOKE ALL ON TABLE public\.members FROM authenticated/)
+  assert.match(migration, /REVOKE ALL ON TABLE public\.committee_members FROM authenticated/)
+  assert.match(migration, /TO anon\s+USING \(is_active = true\)/)
+  assert.match(migration, /public_read_active_committee_members/)
+})
+
+test("CMS authentication has no source-controlled login credentials", async () => {
+  const sourceUrl = new URL("./index.ts", import.meta.url)
+  const source = await readFile(sourceUrl, "utf8")
+
+  assert.match(source, /requiredEnv\("CMS_ADMIN_EMAIL"\)/)
+  assert.match(source, /requiredEnv\("SUPABASE_SERVICE_ROLE_KEY"\)/)
+  assert.doesNotMatch(source, /CMS_PASSWORD\s*=/)
+  assert.doesNotMatch(source, /SESSION_SECRET\s*=/)
+})
