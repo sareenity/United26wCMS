@@ -121,6 +121,12 @@ async function sendLockoutAlert(
 }
 
 const STATISTIC_REGIONS = ["worldwide", "india", "mumbai", "united"] as const
+const STATISTIC_CARD_COUNTS: Record<StatisticRegion, number> = {
+  worldwide: 5,
+  india: 6,
+  mumbai: 5,
+  united: 4,
+}
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const CMS_SESSION_HOURS = 8
 
@@ -152,7 +158,7 @@ function validateStatistics(input: unknown): StatisticRecord[] | null {
       || !candidate.summary.trim()
       || candidate.summary.length > 500
       || !Array.isArray(candidate.stats)
-      || candidate.stats.length !== 4
+      || candidate.stats.length !== STATISTIC_CARD_COUNTS[candidate.region as StatisticRegion]
     ) return null
 
     const stats: StatisticItem[] = []
@@ -384,7 +390,7 @@ Deno.serve(async (req: Request) => {
       case "save-statistics": {
         const statistics = validateStatistics(body.statistics)
         if (!statistics) {
-          return json({ error: "All four statistic groups and their four valid statistics are required" }, 400)
+          return json({ error: "All four statistic groups and their complete set of valid statistics are required" }, 400)
         }
 
         const updatedAt = new Date().toISOString()

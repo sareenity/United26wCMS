@@ -45,16 +45,16 @@ export function MemberCard({ member, onClick, className, showBadge = true }: Mem
         </div>
 
         <div className="space-y-1 min-w-0 w-full">
-          <p className="font-semibold text-sm leading-tight">
+          <p className="font-semibold text-base leading-tight">
             <span className="text-primary">{member.first_name}</span>{" "}
             <span className="text-foreground">{member.last_name}</span>
           </p>
           {member.tagline && isLeadership ? (
-            <p className="text-xs text-primary font-medium">{member.tagline}</p>
+            <p className="text-sm text-primary font-medium">{member.tagline}</p>
           ) : null}
-          <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{member.business_category}</p>
+          <p className="text-sm text-muted-foreground leading-snug line-clamp-2">{member.business_category}</p>
           {member.company_name && (
-            <p className="text-xs text-foreground/70 leading-snug line-clamp-1">{member.company_name}</p>
+            <p className="text-sm text-foreground/70 leading-snug line-clamp-1">{member.company_name}</p>
           )}
         </div>
 

@@ -24,35 +24,46 @@ export const STATISTIC_REGION_LABELS: Record<StatisticRegion, string> = {
   united: "BNI United",
 }
 
+export const STATISTIC_CARD_COUNTS: Record<StatisticRegion, number> = {
+  worldwide: 5,
+  india: 6,
+  mumbai: 5,
+  united: 4,
+}
+
 export const DEFAULT_CHAPTER_STATISTICS: ChapterStatisticsByRegion = {
   worldwide: {
     region: "worldwide",
-    summary: "BNI generated $26.09 Billion in the last 12 months with 17.9 Million referrals worldwide",
+    summary: "BNI global statistics for September 2025 through August 2026",
     stats: [
-      { label: "Members Worldwide", value: 355582, suffix: "+" },
-      { label: "Chapters", value: 11728, suffix: "+" },
-      { label: "Countries", value: 76, suffix: "+" },
-      { label: "Referrals (Millions)", value: 17, suffix: ".9M+" },
+      { label: "Members", value: 359812, suffix: "" },
+      { label: "Chapters", value: 11894, suffix: "" },
+      { label: "Countries", value: 76, suffix: "" },
+      { label: "Referrals (Sep 25 – Aug 26)", value: 17, suffix: ".25 Million" },
+      { label: "Business Generated (Sep 25 – Aug 26)", value: 26, suffix: ".9 Billion USD" },
     ],
   },
   india: {
     region: "india",
-    summary: "BNI India generated 55,770 Crores in the last 12 months with 49,31,926 referrals",
+    summary: "BNI India performance in the last 12 months",
     stats: [
-      { label: "Members in India", value: 72513, suffix: "+" },
-      { label: "Chapters in India", value: 1498, suffix: "+" },
-      { label: "Cities", value: 143, suffix: "+" },
-      { label: "Business (Crores)", value: 55770, suffix: "+" },
+      { label: "Members", value: 76543, suffix: "" },
+      { label: "Chapters", value: 1577, suffix: "" },
+      { label: "Cities", value: 149, suffix: "" },
+      { label: "Referrals Passed", value: 4990438, suffix: "" },
+      { label: "Business Done in the Last 12 Months", value: 60503, suffix: " Crores" },
+      { label: "Average Value of the Seat Per Annum", value: 83, suffix: ".62 Lakh" },
     ],
   },
   mumbai: {
     region: "mumbai",
-    summary: "BNI Mumbai generated 3656 Crores in the last 12 months with 3,12,434+ referrals",
+    summary: "BNI Mumbai performance in the last 12 months",
     stats: [
-      { label: "Members in Mumbai", value: 5976, suffix: "+" },
-      { label: "Chapters in Mumbai", value: 117, suffix: "+" },
-      { label: "Referrals", value: 312434, suffix: "+" },
-      { label: "Business (Crores)", value: 3656, suffix: "+" },
+      { label: "Members", value: 5973, suffix: "" },
+      { label: "Chapters", value: 117, suffix: "" },
+      { label: "Referrals Passed", value: 307050, suffix: "" },
+      { label: "Business Done in the Last 12 Months", value: 3775, suffix: " Crores" },
+      { label: "Average Value of the Seat Per Annum", value: 63, suffix: ".34 Lakh" },
     ],
   },
   united: {
@@ -98,7 +109,7 @@ export function normalizeChapterStatistics(rows: unknown): ChapterStatisticsByRe
       && typeof stat.suffix === "string"
     ))
 
-    if (stats.length !== 4) continue
+    if (stats.length !== STATISTIC_CARD_COUNTS[candidate.region]) continue
     normalized[candidate.region] = {
       region: candidate.region,
       summary: candidate.summary,

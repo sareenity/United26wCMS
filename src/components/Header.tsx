@@ -55,7 +55,7 @@ export function Header() {
         {/* Right: BNI logo + hamburger */}
         <div className="flex items-center gap-3 shrink-0">
           <img
-            src="/BNI_logo_Red_PMS_Final.png"
+            src="/bni-logo-red.svg"
             alt="BNI"
             className="h-8 w-auto object-contain"
             onError={(e) => {

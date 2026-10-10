@@ -12,7 +12,7 @@ import {
   type StatisticItem,
 } from "@/lib/statistics"
 
-function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+function AnimatedCounter({ target, suffix = "", locale = "en-US" }: { target: number; suffix?: string; locale?: string }) {
   const [count, setCount] = useState(0)
   const ref = useRef<HTMLSpanElement>(null)
   const hasAnimated = useRef(false)
@@ -44,7 +44,7 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
     return () => observer.disconnect()
   }, [target])
 
-  return <span ref={ref}>{count.toLocaleString()}{suffix}</span>
+  return <span ref={ref}>{`${count.toLocaleString(locale)}${suffix}`}</span>
 }
 
 const CORE_VALUES = [
@@ -57,16 +57,20 @@ const CORE_VALUES = [
   { icon: Award, label: "Recognition", desc: "Recognise others and be recognised. Appreciation drives performance." },
 ]
 
-function StatGrid({ stats }: { stats: StatisticItem[] }) {
+function StatGrid({ stats, locale = "en-US" }: { stats: StatisticItem[]; locale?: string }) {
+  const columns = stats.length === 4
+    ? "grid-cols-2 md:grid-cols-4"
+    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className={`grid ${columns} gap-4`}>
       {stats.map((s, index) => (
         <Card key={`${s.label}-${index}`} className="border border-border">
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold text-primary mb-1">
-              <AnimatedCounter target={s.value} suffix={s.suffix} />
+              <AnimatedCounter target={s.value} suffix={s.suffix} locale={locale} />
             </div>
-            <p className="text-xs text-muted-foreground leading-snug">{s.label}</p>
+            <p className="text-sm text-muted-foreground leading-snug">{s.label}</p>
           </CardContent>
         </Card>
       ))}
@@ -140,7 +144,7 @@ export function StatsSection() {
               <MapPin size={16} className="text-primary" />
               <span>{statistics.india.summary}</span>
             </div>
-            <StatGrid stats={statistics.india.stats} />
+            <StatGrid stats={statistics.india.stats} locale="en-IN" />
           </TabsContent>
 
           <TabsContent value="mumbai">
@@ -148,7 +152,7 @@ export function StatsSection() {
               <Building2 size={16} className="text-primary" />
               <span>{statistics.mumbai.summary}</span>
             </div>
-            <StatGrid stats={statistics.mumbai.stats} />
+            <StatGrid stats={statistics.mumbai.stats} locale="en-IN" />
           </TabsContent>
 
           <TabsContent value="chapter">

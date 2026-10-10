@@ -63,7 +63,7 @@ export function Footer() {
           {/* BNI Logo */}
           <div className="flex flex-col items-start md:items-end gap-3">
             <img
-              src="/BNI_logo_Red_PMS_Final.png"
+              src="/bni-logo-red.svg"
               alt="BNI"
               className="h-10 w-auto object-contain brightness-0 invert"
               onError={(e) => { e.currentTarget.style.display = "none" }}

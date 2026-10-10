@@ -502,7 +502,7 @@ export default function RosterPrintPage() {
       {/* Global Repeating Print Header */}
       <div className="global-print-header">
         <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
-        <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
+        <img src="/bni-logo-red.svg" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
       </div>
 
       <div className="print-wrapper" style={{ paddingTop: "56px" }}>
@@ -511,7 +511,7 @@ export default function RosterPrintPage() {
         <div className="print-page">
           <div className="screen-header">
             <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
+            <img src="/bni-logo-red.svg" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
           </div>
 
           {/* Page 1 Header Title */}
@@ -591,7 +591,7 @@ export default function RosterPrintPage() {
             <div key={pageIdx} className="print-page">
               <div className="screen-header">
                 <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
-                <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
+                <img src="/bni-logo-red.svg" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
               </div>
 
               <div className="section-header">
@@ -670,7 +670,7 @@ export default function RosterPrintPage() {
         <div className="print-page" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div className="screen-header">
             <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
-            <img src="/BNI_logo_Red_PMS_Final.png" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
+            <img src="/bni-logo-red.svg" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
           </div>
 
           <div className="cover-accent-top" />

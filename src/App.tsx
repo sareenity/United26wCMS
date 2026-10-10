@@ -169,8 +169,8 @@ export default function App() {
       ) : (
         <>
           <StatsSection />
-          <SupportTeamSection members={supportMembers} />
           <LeadershipSection members={leadershipMembers} onMemberClick={handleMemberClick} />
+          <SupportTeamSection members={supportMembers} />
           <CommitteesSection
             committees={committees}
             committeeMembersMap={committeeMembersMap}
