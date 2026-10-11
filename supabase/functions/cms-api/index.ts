@@ -289,7 +289,7 @@ Deno.serve(async (req: Request) => {
     if (action === "get-public-directory") {
       await cleanupInactivePhotos(supabase)
       const [membersResult, committeesResult, assignmentsResult] = await Promise.all([
-        supabase.from("members").select("*").eq("is_active", true).order("sort_order"),
+        supabase.from("members").select("*").eq("is_active", true).order("first_name").order("last_name"),
         supabase.from("committees").select("*").order("sort_order"),
         supabase.from("committee_members").select("*"),
       ])
@@ -416,7 +416,8 @@ Deno.serve(async (req: Request) => {
         const { data, error } = await supabase
           .from("members")
           .select("*")
-          .order("sort_order")
+          .order("first_name")
+          .order("last_name")
         if (error) throw error
         return json({ data })
       }
@@ -502,7 +503,8 @@ Deno.serve(async (req: Request) => {
         const { data, error } = await supabase
           .from("members")
           .select("*")
-          .order("sort_order")
+          .order("first_name")
+          .order("last_name")
         if (error) throw error
         return json({ data })
       }

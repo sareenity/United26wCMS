@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MemberCard } from "@/components/MemberCard"
 import type { Member, PowerTeamName } from "@/lib/types"
 import { POWER_TEAM_DEFINITIONS } from "@/lib/powerTeams"
-import { sortMembersBySurname } from "@/lib/utils"
+import { sortMembersByFirstName } from "@/lib/utils"
 
 interface PowerTeamsSectionProps {
   membersByTeam: Record<PowerTeamName, Member[]>
@@ -35,7 +35,7 @@ function TeamHeader({ members }: { members: Member[] }) {
 }
 
 export function PowerTeamsSection({ membersByTeam, onMemberClick }: PowerTeamsSectionProps) {
-  const allMembers = sortMembersBySurname(POWER_TEAM_DEFINITIONS.flatMap((t) => membersByTeam[t.name] || []))
+  const allMembers = sortMembersByFirstName(POWER_TEAM_DEFINITIONS.flatMap((t) => membersByTeam[t.name] || []))
 
   return (
     <section id="power-teams" className="bg-secondary/20 py-12 md:py-16">
@@ -83,7 +83,7 @@ export function PowerTeamsSection({ membersByTeam, onMemberClick }: PowerTeamsSe
           </TabsContent>
 
           {POWER_TEAM_DEFINITIONS.map((team) => {
-            const members = sortMembersBySurname(membersByTeam[team.name] || [])
+            const members = sortMembersByFirstName(membersByTeam[team.name] || [])
             return (
               <TabsContent key={team.name} value={team.name}>
                 <p className="text-sm text-muted-foreground mb-5">{team.description}</p>

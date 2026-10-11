@@ -658,7 +658,7 @@ export function MemberForm({ open, member, committees, assignments, onClose, onS
                   )}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Lower numbers appear first. Support team uses 1–9, Leadership 10–19, Members 20+.
+                  Used only to order Leadership and Support team cards. Member lists are alphabetical by first name.
                 </p>
               </div>
             </div>

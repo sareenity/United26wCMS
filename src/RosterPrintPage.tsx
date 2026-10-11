@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
-import { sortMembersBySurname } from "@/lib/utils"
-import { Crown, Star, Loader2 } from "lucide-react"
+import { sortMembersByFirstName } from "@/lib/utils"
+import { Crown, Loader2, Star } from "lucide-react"
 import { getPublicDirectory } from "@/lib/publicApi"
 import { resolveTermRoleData } from "@/lib/termRoleData"
 
@@ -12,8 +12,8 @@ const CONTACT = {
   email: "bniunitedlt@gmail.com",
   instagram: "bniunitedmumbai",
   instagramUrl: "https://www.instagram.com/bniunitedmumbai/",
-  linkedin: "BNI United",
-  linkedinUrl: "https://www.linkedin.com/in/bni-united-601082400/",
+  linkedin: "BNI United Mumbai",
+  linkedinUrl: "https://www.linkedin.com/in/bniunitedmumbai/",
 }
 
 const PRINT_CSS = `
@@ -26,15 +26,15 @@ const PRINT_CSS = `
     position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
     background: #1a1a1a; color: white; padding: 10px 20px;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    font-size: 13px;
+    font-size: 14px;
   }
   .no-print-bar button {
     background: ${R}; color: white; border: none; cursor: pointer;
-    padding: 7px 18px; border-radius: 4px; font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 4px; font-size: 14px; font-weight: 700;
   }
   .no-print-bar a {
     background: white; color: #1a1a1a; text-decoration: none;
-    padding: 7px 18px; border-radius: 4px; font-size: 13px; font-weight: 600;
+    padding: 8px 18px; border-radius: 4px; font-size: 14px; font-weight: 700;
   }
   .no-print-bar button:hover { opacity: 0.9; }
   .no-print-bar a:hover { opacity: 0.9; }
@@ -62,16 +62,16 @@ const PRINT_CSS = `
     border-bottom: 2px solid ${R}; padding-bottom: 8px; margin-bottom: 15px;
     height: 48px;
   }
-  .screen-header img.logo-left { height: 40px; object-fit: contain; }
-  .screen-header img.logo-right { height: 30px; object-fit: contain; }
+  .screen-header img.logo-left { height: 42px; width: auto; object-fit: contain; }
+  .screen-header img.logo-right { height: 32px; width: auto; object-fit: contain; }
 
   .section-header {
     background: ${R}; color: white; padding: 5px 10px; margin-bottom: 10px;
     border-radius: 4px;
     display: flex; align-items: center; justify-content: space-between;
   }
-  .section-header h2 { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-  .section-header span { font-size: 12px; opacity: 0.8; }
+  .section-header h2 { font-size: 16px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .section-header span { font-size: 13px; opacity: 0.9; }
 
   /* staff/leadership row cards (compacted to prevent A4 overflow) */
   .staff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
@@ -82,55 +82,71 @@ const PRINT_CSS = `
     min-height: 110px;
   }
   .staff-avatar {
-    width: 36px; height: 36px; border-radius: 50%; margin-bottom: 4px;
+    width: 48px; height: 48px; border-radius: 50%; margin-bottom: 5px;
     background: #fbe9ec; display: flex; align-items: center; justify-content: center;
     font-size: 12px; font-weight: 700; color: ${R}; overflow: hidden;
     flex-shrink: 0;
   }
   .staff-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .staff-name { font-size: 12.5px; font-weight: 700; color: #111; line-height: 1.3; }
-  .staff-role { font-size: 10px; color: ${R}; font-weight: 600; margin-top: 1px; }
-  .staff-company { font-size: 9.5px; color: #777; margin-top: 1px; }
-  .staff-contact-info { display: flex; flex-direction: column; gap: 1px; margin-top: 5px; font-size: 9.5px; width: 100%; }
+  .staff-name { font-size: 13.5px; font-weight: 700; color: #111; line-height: 1.3; }
+  .staff-role { font-size: 10.5px; color: ${R}; font-weight: 700; margin-top: 2px; }
+  .staff-company { font-size: 10px; color: #64666A; margin-top: 2px; }
+  .staff-contact-info { display: flex; flex-direction: column; gap: 2px; margin-top: 5px; font-size: 10px; width: 100%; }
   .staff-contact-info a { color: #444; text-decoration: none; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 
-  /* table roster styling */
-  .roster-table-container {
-    width: 100%;
+  /* Two-column member format follows the supplied BNI roster reference. */
+  .roster-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
     margin-top: 10px;
-    border: 1px solid #e8e8e8;
-    border-radius: 6px;
+  }
+  .roster-card {
+    min-height: 45mm;
+    border: 1px solid #C8C8C8;
+    border-top: 3px solid ${R};
+    border-radius: 5px;
+    background: #FFFFFF;
+    display: grid;
+    grid-template-columns: 29mm minmax(0, 1fr);
     overflow: hidden;
-  }
-  .roster-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-  }
-  .roster-table th {
-    background: #fcfcfc;
-    border-bottom: 2px solid ${R};
-    color: #333;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 6px 8px;
-  }
-  .roster-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid #eee;
-    vertical-align: middle;
-  }
-  .roster-table tr {
     break-inside: avoid;
   }
-  .roster-table tr:last-child td {
-    border-bottom: none;
+  .roster-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    width: calc((100% - 8px) / 2);
+    justify-self: center;
   }
-  .roster-table tr:nth-child(even) td {
-    background: #fdfdfd;
+  .roster-photo {
+    width: 29mm;
+    height: 100%;
+    min-height: 44mm;
+    background: #F2F2F2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: ${R};
+    font-size: 22px;
+    font-weight: 700;
   }
+  .roster-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .roster-details {
+    min-width: 0;
+    padding: 9px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #202020;
+  }
+  .roster-name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+  .roster-name { font-size: 15px; line-height: 1.2; font-weight: 700; color: #202020; }
+  .roster-company { font-size: 12px; line-height: 1.3; font-weight: 700; color: #64666A; margin-bottom: 3px; }
+  .roster-field { font-size: 11px; line-height: 1.35; color: #363636; overflow-wrap: anywhere; }
+  .roster-field strong { color: #202020; font-weight: 700; }
+  .roster-field a { color: inherit; text-decoration: none; }
+  .roster-field a:hover { color: ${R}; text-decoration: underline; }
+  .roster-role { font-size: 9.5px; line-height: 1.2; color: ${R}; font-weight: 700; margin-bottom: 3px; }
 
   /* committee and coordinator pages */
   .committee-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -159,23 +175,29 @@ const PRINT_CSS = `
   /* core values styles */
   .core-values-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 0 2px; }
   .core-value-card { border: 1px solid #e8e8e8; border-radius: 4px; padding: 6px 8px; background: #fcfcfc; }
-  .core-value-card h4 { font-size: 11px; font-weight: 700; color: ${R}; margin-bottom: 2px; }
-  .core-value-card p { font-size: 9px; color: #555; line-height: 1.3; }
+  .core-value-card h4 { font-size: 11.5px; font-weight: 700; color: ${R}; margin-bottom: 2px; }
+  .core-value-card p { font-size: 9.5px; color: #555; line-height: 1.35; }
 
   /* footer positioning */
   .print-footer {
     position: absolute;
-    bottom: 12mm;
-    left: 14mm;
-    right: 14mm;
-    border-top: 1px solid #eee;
-    padding-top: 6px;
+    bottom: 9mm;
+    left: 10mm;
+    right: 10mm;
+    border-top: 1px solid #C8C8C8;
+    padding-top: 5px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
-    font-size: 9px;
-    color: #bbb;
+    gap: 5px;
+    white-space: nowrap;
+    font-size: 7.5px;
+    color: #64666A;
   }
+  .print-footer a { color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 2px; }
+  .print-footer a:hover { color: ${R}; text-decoration: underline; }
+  .print-footer svg { width: 8px; height: 8px; color: ${R}; flex: none; }
+  .print-footer .footer-separator { color: ${R}; font-weight: 700; }
 
   @media print {
     *, *::before, *::after {
@@ -236,9 +258,9 @@ const PRINT_CSS = `
     
     .print-footer {
       position: absolute;
-      bottom: 12mm;
-      left: 14mm;
-      right: 14mm;
+      bottom: 9mm;
+      left: 10mm;
+      right: 10mm;
       display: flex !important;
     }
 
@@ -252,9 +274,9 @@ const PRINT_CSS = `
       min-height: 100px !important;
     }
     .staff-avatar {
-      width: 32px !important;
-      height: 32px !important;
-      margin-bottom: 2px !important;
+      width: 42px !important;
+      height: 42px !important;
+      margin-bottom: 3px !important;
     }
     .staff-name {
       font-size: 11.5px !important;
@@ -279,30 +301,12 @@ const PRINT_CSS = `
       padding: 4px 6px !important;
     }
 
-    /* Balanced roster rows: readable type and enough separation for scanning. */
-    .roster-table th {
-      padding: 6px 7px !important;
-      font-size: 11.5px !important;
-    }
-    .roster-table td {
-      padding: 6px 7px !important;
-      line-height: 1.3 !important;
-    }
-    .roster-table td span {
-      font-size: 12px !important;
-    }
-    .roster-table td div {
-      font-size: 10.5px !important;
-    }
-    .roster-table td a {
-      font-size: 10px !important;
-      line-height: 1.35 !important;
-    }
-    .member-avatar-wrapper {
-      width: 26px !important;
-      height: 26px !important;
-      font-size: 9px !important;
-    }
+    .roster-grid { gap: 7px !important; }
+    .roster-card { min-height: 45mm !important; }
+    .roster-details { padding: 8px 9px !important; }
+    .roster-name { font-size: 14px !important; }
+    .roster-company { font-size: 11.5px !important; }
+    .roster-field { font-size: 10.5px !important; }
   }
 `
 
@@ -310,30 +314,66 @@ function initials(m: Member) {
   return `${m.first_name[0] ?? ""}${m.last_name[0] ?? ""}`.toUpperCase()
 }
 
-function MemberAvatar({ member, size = 32 }: { member: Member; size?: number }) {
+function RosterPhoto({ member }: { member: Member }) {
   const [err, setErr] = useState(false)
   if (member.photo_url && !err) {
     return (
-      <div className="member-avatar-wrapper" style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+      <div className="roster-photo">
         <img
           src={member.photo_url}
           alt={`${member.first_name} ${member.last_name}`}
           onError={() => setErr(true)}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
     )
   }
+  return <div className="roster-photo">{initials(member)}</div>
+}
+
+function websiteHref(website: string): string {
+  const trimmed = website.trim().replace(/^htpps?:\/\//i, "https://")
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
+function websiteLabel(website: string): string {
+  try {
+    const url = new URL(websiteHref(website))
+    const path = url.pathname === "/" ? "" : url.pathname.replace(/\/$/, "")
+    return `${url.hostname.replace(/^www\./i, "")}${path}`
+  } catch {
+    return website.trim().replace(/^htpps?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "")
+  }
+}
+
+function PrintFooter({ page, total, monthYear }: { page: number; total: number; monthYear: string }) {
   return (
-    <div
-      className="member-avatar-wrapper"
-      style={{
-        width: size, height: size, borderRadius: "50%", background: "#fbe9ec",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: size * 0.35, fontWeight: 700, color: R, flexShrink: 0,
-      }}
-    >
-      {initials(member)}
+    <div className="print-footer">
+      <span>BNI United</span>
+      <span className="footer-separator">·</span>
+      <span>{monthYear} Chapter Roster</span>
+      <span className="footer-separator">·</span>
+      <a href={CONTACT.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="BNI United Mumbai on Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+        </svg>
+        {CONTACT.instagram}
+      </a>
+      <span className="footer-separator">·</span>
+      <a href={CONTACT.linkedinUrl} target="_blank" rel="noopener noreferrer" aria-label="BNI United Mumbai on LinkedIn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z" /><rect width="4" height="12" x="2" y="9" /><circle cx="4" cy="4" r="2" />
+        </svg>
+        {CONTACT.linkedin}
+      </a>
+      <span className="footer-separator">·</span>
+      <a href={`mailto:${CONTACT.email}`} aria-label={`Email ${CONTACT.email}`}>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+        </svg>
+        {CONTACT.email}
+      </a>
+      <span className="footer-separator">·</span>
+      <span>Page {page} of {total}</span>
     </div>
   )
 }
@@ -422,31 +462,25 @@ export default function RosterPrintPage() {
     loadRoster()
   }, [])
 
-  useEffect(() => {
-    if (!ready || loading || members.length === 0) return
-    if (window.location.search.includes("noprint")) return
-    const t = setTimeout(() => window.print(), 1500)
-    return () => clearTimeout(t)
-  }, [ready, loading, members])
-
   const activeMembers = members.filter((m) => m.is_active)
   const supportTeam = activeMembers.filter((m) => m.chapter_role === "support").sort((a, b) => a.sort_order - b.sort_order)
   const leadership = activeMembers.filter((m) => m.chapter_role === "leadership").sort((a, b) => a.sort_order - b.sort_order)
   
   // Chapter roster contains all active members except support
   const rosterMembers = activeMembers.filter((m) => m.chapter_role !== "support")
-  const sortedRoster = sortMembersBySurname(rosterMembers)
+  const sortedRoster = sortMembersByFirstName(rosterMembers)
 
-  // Two balanced roster pages avoid large trailing blank areas while keeping
-  // enough vertical separation for names and contact details to remain legible.
-  const MEMBERS_PER_PAGE = 18
+  // Fill each A4 page with four complete rows. With an odd total roster count,
+  // only the final page has an unpaired card, which is centered by the grid CSS.
+  const MAX_MEMBERS_PER_PAGE = 8
   const chunkedRoster: Member[][] = []
-  for (let i = 0; i < sortedRoster.length; i += MEMBERS_PER_PAGE) {
-    chunkedRoster.push(sortedRoster.slice(i, i + MEMBERS_PER_PAGE))
+  for (let rosterOffset = 0; rosterOffset < sortedRoster.length; rosterOffset += MAX_MEMBERS_PER_PAGE) {
+    chunkedRoster.push(sortedRoster.slice(rosterOffset, rosterOffset + MAX_MEMBERS_PER_PAGE))
   }
 
-  const totalPrintPages = 1 + chunkedRoster.length + 1
+  const totalPrintPages = 1 + chunkedRoster.length
   const generatedDate = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+  const rosterMonthYear = new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" })
 
   if (loading || !ready) {
     return (
@@ -492,7 +526,7 @@ export default function RosterPrintPage() {
 
       {/* Screen-only action bar */}
       <div className="no-print-bar">
-        <span>BNI United Roster · {generatedDate} · {activeMembers.length} active members</span>
+        <span>BNI United Roster · {generatedDate} · {sortedRoster.length} active members</span>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <a href="/BNI_United_Chapter_Roster.pdf" download>Download fixed PDF</a>
           <button onClick={() => window.print()}>Print current roster</button>
@@ -507,7 +541,7 @@ export default function RosterPrintPage() {
 
       <div className="print-wrapper" style={{ paddingTop: "56px" }}>
 
-        {/* ── PAGE 1: SUPPORT TEAM & LEADERSHIP ── */}
+        {/* ── PAGE 1: LEADERSHIP, SUPPORT TEAM & CORE VALUES ── */}
         <div className="print-page">
           <div className="screen-header">
             <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
@@ -521,22 +555,22 @@ export default function RosterPrintPage() {
             </h1>
           </div>
 
-          {/* Support Team */}
-          <div className="section-header">
-            <h2>BNI United Support Team</h2>
-          </div>
-          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${supportTeam.length}, 1fr)` }}>
-            {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
-          </div>
-
-          <hr className="light-rule" />
-
           {/* Leadership Team */}
           <div className="section-header">
             <h2>BNI United Leadership Team</h2>
           </div>
           <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${leadership.length}, 1fr)` }}>
             {leadership.map((m) => <StaffCard key={m.id} member={m} />)}
+          </div>
+
+          <hr className="light-rule" />
+
+          {/* Support Team */}
+          <div className="section-header">
+            <h2>BNI United Support Team</h2>
+          </div>
+          <div className="staff-grid" style={{ gridTemplateColumns: `repeat(${supportTeam.length}, 1fr)` }}>
+            {supportTeam.map((m) => <StaffCard key={m.id} member={m} />)}
           </div>
 
           <hr className="light-rule" />
@@ -578,10 +612,7 @@ export default function RosterPrintPage() {
             </div>
           </div>
 
-          <div className="print-footer">
-            <span>BNI United · 2026 Chapter Roster</span>
-            <span>Page 1 of {totalPrintPages}</span>
-          </div>
+          <PrintFooter page={1} total={totalPrintPages} monthYear={rosterMonthYear} />
         </div>
 
         {/* ── PAGES 2 to 2+N: CHAPTER ROSTER TABLE ── */}
@@ -599,148 +630,41 @@ export default function RosterPrintPage() {
                 <span>{sortedRoster.length} Members</span>
               </div>
 
-              <div className="roster-table-container">
-                <table className="roster-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: "22%" }}>Member</th>
-                      <th style={{ width: "13%" }}>Power Team</th>
-                      <th style={{ width: "33%" }}>Business Category &amp; Company</th>
-                      <th style={{ width: "32%" }}>Contact Details</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pageMembers.map((m) => (
-                      <tr key={m.id}>
-                        <td>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <MemberAvatar member={m} size={28} />
-                            <div>
-                              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px" }}>
-                                <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#111" }}>
-                                  {m.first_name} {m.last_name}
-                                </span>
-                                {m.is_power_team_captain && (
-                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: R, borderRadius: "50%", padding: 2 }} title="Captain">
-                                    <Crown size={8} style={{ color: "white" }} />
-                                  </span>
-                                )}
-                                {m.is_power_team_vice_captain && (
-                                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#fbe9ec", borderRadius: "50%", padding: 2, border: `1px solid ${R}` }} title="Vice Captain">
-                                    <Star size={8} style={{ color: R }} />
-                                  </span>
-                                )}
-                              </div>
-                              {m.chapter_role === "leadership" && m.tagline && (
-                                <div style={{ fontSize: "10px", color: R, fontWeight: 600, marginTop: "1px" }}>
-                                  {m.tagline}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ fontSize: "11.5px", color: "#444" }}>
-                          {m.power_team ?? "—"}
-                        </td>
-                        <td>
-                          <div style={{ fontSize: "11.5px", fontWeight: 600, color: "#333", lineHeight: 1.2 }}>{m.business_category}</div>
-                          {m.company_name && <div style={{ fontSize: "10px", color: "#777", marginTop: "1px" }}>{m.company_name}</div>}
-                        </td>
-                        <td>
-                          <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontSize: "11px" }}>
-                            {m.phone && <a href={`tel:${m.phone}`} style={{ color: "#333", textDecoration: "none" }}>📞 {m.phone}</a>}
-                            {m.email && <a href={`mailto:${m.email}`} style={{ color: "#333", textDecoration: "none", wordBreak: "break-all" }}>✉️ {m.email}</a>}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="roster-grid">
+                {pageMembers.map((m) => (
+                  <article className="roster-card" key={m.id}>
+                    <RosterPhoto member={m} />
+                    <div className="roster-details">
+                      <div className="roster-name-row">
+                        <span className="roster-name">{m.first_name} {m.last_name}</span>
+                        {m.is_power_team_captain && (
+                          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: R, borderRadius: "50%", padding: 3 }} title="Power Team Captain">
+                            <Crown size={9} style={{ color: "white" }} />
+                          </span>
+                        )}
+                        {m.is_power_team_vice_captain && (
+                          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F2F2F2", borderRadius: "50%", padding: 3, border: `1px solid ${R}` }} title="Power Team Vice Captain">
+                            <Star size={9} style={{ color: R }} />
+                          </span>
+                        )}
+                      </div>
+                      {m.chapter_role === "leadership" && m.tagline && <div className="roster-role">{m.tagline}</div>}
+                      {m.company_name && <div className="roster-company">{m.company_name}</div>}
+                      <div className="roster-field"><strong>Industry:</strong> {m.business_category}</div>
+                      {m.email && <div className="roster-field"><strong>Email:</strong> <a href={`mailto:${m.email}`}>{m.email}</a></div>}
+                      {m.phone && <div className="roster-field"><strong>M:</strong> <a href={`tel:${m.phone}`}>{m.phone}</a></div>}
+                      {m.website && (
+                        <div className="roster-field"><strong>Website:</strong> <a href={websiteHref(m.website)} target="_blank" rel="noopener noreferrer">{websiteLabel(m.website)}</a></div>
+                      )}
+                    </div>
+                  </article>
+                ))}
               </div>
 
-              <div className="print-footer">
-                <span>BNI United · 2026 Chapter Roster</span>
-                <span>Page {currentPageNum} of {totalPrintPages}</span>
-              </div>
+              <PrintFooter page={currentPageNum} total={totalPrintPages} monthYear={rosterMonthYear} />
             </div>
           )
         })}
-
-        {/* ── LAST PAGE: BNI UNITED CONNECT ── */}
-        <div className="print-page" style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-          <div className="screen-header">
-            <img src="/BNiUnited_Logo_Color_1.png" alt="BNI United" className="logo-left" loading="eager" decoding="sync" />
-            <img src="/bni-logo-red.svg" alt="BNI" className="logo-right" loading="eager" decoding="sync" />
-          </div>
-
-          <div className="cover-accent-top" />
-
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: R, marginBottom: 8 }}>
-                Connect With Us
-              </div>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: "#111", lineHeight: 1.2, marginBottom: 6 }}>
-                BNI United
-              </h2>
-              <p style={{ fontSize: 13, color: "#666" }}>Mumbai, India · Business Network International</p>
-            </div>
-
-            <hr className="red-rule" style={{ width: "50%", margin: "0 auto 30px" }} />
-
-            {/* Contact info */}
-            <div style={{ maxWidth: "65%", margin: "0 auto" }}>
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="contact-label">Email</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>
-                    <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="contact-label">Instagram</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>
-                    <a href={CONTACT.instagramUrl} target="_blank" rel="noopener noreferrer">{CONTACT.instagram}</a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="contact-item">
-                <div className="contact-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="contact-label">LinkedIn</div>
-                  <div className="contact-value" style={{ fontSize: "12px" }}>
-                    <a href={CONTACT.linkedinUrl} target="_blank" rel="noopener noreferrer">{CONTACT.linkedin}</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="print-footer" style={{ borderTop: `2px solid ${R}`, position: "relative", bottom: 0, left: 0, right: 0, marginTop: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-              <p style={{ fontSize: 9, fontWeight: 700, color: R, letterSpacing: "0.08em" }}>"Givers Gain®"</p>
-              <p style={{ fontSize: 9, color: "#bbb" }}>Page {totalPrintPages} of {totalPrintPages}</p>
-            </div>
-          </div>
-        </div>
 
       </div>
     </>

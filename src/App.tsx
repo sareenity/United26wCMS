@@ -12,7 +12,7 @@ import { MemberDialog } from "@/components/MemberDialog"
 import { Footer } from "@/components/Footer"
 import { Loader2, AlertCircle } from "lucide-react"
 import { matchMember } from "@/lib/search"
-import { sortMembersBySurname } from "@/lib/utils"
+import { sortMembersByFirstName } from "@/lib/utils"
 import { resolveTermRoleData } from "@/lib/termRoleData"
 
 
@@ -86,7 +86,7 @@ export default function App() {
 
   const filteredMembers = useMemo(() => {
     if (!searchQuery.trim()) return []
-    return sortMembersBySurname(members.filter((m) => matchMember(m, searchQuery)))
+    return sortMembersByFirstName(members.filter((m) => matchMember(m, searchQuery)))
   }, [members, searchQuery])
 
   const handleMemberClick = (member: Member) => {

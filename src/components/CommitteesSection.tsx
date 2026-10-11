@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { MemberAvatar } from "@/components/MemberAvatar"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
-import { compareMembersBySurname } from "@/lib/utils"
+import { compareMembersByFirstName } from "@/lib/utils"
 
 interface CommitteesSectionProps {
   committees: Committee[]
@@ -62,7 +62,7 @@ function CommitteeBlock({ members, membersById, onMemberClick }: {
     const memberB = membersById[b.member_id]
     if (!memberA) return 1
     if (!memberB) return -1
-    return compareMembersBySurname(memberA, memberB)
+    return compareMembersByFirstName(memberA, memberB)
   })
 
   return (

@@ -5,17 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function compareMembersBySurname<T extends { first_name: string; last_name: string }>(a: T, b: T): number {
-  const lastA = (a.last_name || "").trim().toLowerCase()
-  const lastB = (b.last_name || "").trim().toLowerCase()
-  const lastCompare = lastA.localeCompare(lastB, undefined, { sensitivity: "base" })
-  if (lastCompare !== 0) return lastCompare
-
+export function compareMembersByFirstName<T extends { first_name: string; last_name: string }>(a: T, b: T): number {
   const firstA = (a.first_name || "").trim().toLowerCase()
   const firstB = (b.first_name || "").trim().toLowerCase()
-  return firstA.localeCompare(firstB, undefined, { sensitivity: "base" })
+  const firstCompare = firstA.localeCompare(firstB, undefined, { sensitivity: "base" })
+  if (firstCompare !== 0) return firstCompare
+
+  const lastA = (a.last_name || "").trim().toLowerCase()
+  const lastB = (b.last_name || "").trim().toLowerCase()
+  return lastA.localeCompare(lastB, undefined, { sensitivity: "base" })
 }
 
-export function sortMembersBySurname<T extends { first_name: string; last_name: string }>(members: T[]): T[] {
-  return [...members].sort(compareMembersBySurname)
+export function sortMembersByFirstName<T extends { first_name: string; last_name: string }>(members: T[]): T[] {
+  return [...members].sort(compareMembersByFirstName)
 }

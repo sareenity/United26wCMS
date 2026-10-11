@@ -30,7 +30,7 @@ export function SupportTeamSection({ members }: SupportTeamSectionProps) {
                   photoUrl={m.photo_url}
                   firstName={m.first_name}
                   lastName={m.last_name}
-                  size="md"
+                  size="lg"
                 />
                 <div>
                   <p className="font-bold text-sm">

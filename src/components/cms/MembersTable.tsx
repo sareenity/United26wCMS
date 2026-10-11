@@ -37,7 +37,7 @@ import {
 import { Pencil, ArchiveX, ArchiveRestore, Plus, Search, FileDown } from "lucide-react"
 import { softDeleteMember, restoreMember } from "@/lib/cmsApi"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
-import { sortMembersBySurname } from "@/lib/utils"
+import { sortMembersByFirstName } from "@/lib/utils"
 
 interface MembersTableProps {
   members: Member[]
@@ -97,7 +97,7 @@ export function MembersTable({ members, committees, committeeMembers, loading, o
         (statusFilter === "inactive" && !m.is_active)
       return matchSearch && matchRole && matchStatus
     })
-    return sortMembersBySurname(result)
+    return sortMembersByFirstName(result)
   }, [members, search, roleFilter, statusFilter])
 
   async function handleDeactivate(member: Member) {

@@ -33,7 +33,7 @@ import {
   type PowerTeamAssignmentInput,
   type PowerTeamName,
 } from "@/lib/types"
-import { sortMembersBySurname } from "@/lib/utils"
+import { sortMembersByFirstName } from "@/lib/utils"
 
 type TeamRole = "member" | "captain" | "vice-captain"
 
@@ -73,7 +73,7 @@ function buildAssignments(members: Member[]): Record<string, EditorAssignment> {
 
 export function PowerTeamsEditor({ members, onSaved }: PowerTeamsEditorProps) {
   const activeMembers = useMemo(
-    () => sortMembersBySurname(
+    () => sortMembersByFirstName(
       members.filter((member) => member.is_active && member.chapter_role !== "support"),
     ),
     [members],
@@ -322,4 +322,3 @@ export function PowerTeamsEditor({ members, onSaved }: PowerTeamsEditorProps) {
     </div>
   )
 }
-

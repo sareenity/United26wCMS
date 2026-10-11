@@ -128,7 +128,7 @@ export default function CmsPage() {
         <div>
           <h1 className="text-xl font-semibold text-foreground">Members</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage the BNI United chapter roster
+            Manage the BNI United chapter roster. Lists are alphabetical by first name.
           </p>
           {syncIssues.length > 0 && (
             <p className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">

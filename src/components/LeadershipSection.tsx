@@ -37,7 +37,7 @@ export function LeadershipSection({ members, onMemberClick }: LeadershipSectionP
                       photoUrl={m.photo_url}
                       firstName={m.first_name}
                       lastName={m.last_name}
-                      size="lg"
+                      size="xl"
                     />
                   </div>
                   <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
