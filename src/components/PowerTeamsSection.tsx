@@ -2,16 +2,8 @@ import { Building, Crown, Star } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MemberCard } from "@/components/MemberCard"
 import type { Member, PowerTeamName } from "@/lib/types"
+import { POWER_TEAM_DEFINITIONS } from "@/lib/powerTeams"
 import { sortMembersBySurname } from "@/lib/utils"
-
-const POWER_TEAMS: { name: PowerTeamName; description: string }[] = [
-  { name: "Corporate", description: "Corporate services and professional solutions" },
-  { name: "Marketing & Branding", description: "Marketing, branding, media, and creative services" },
-  { name: "MSME", description: "Manufacturing, exports, logistics, and small business" },
-  { name: "Real-Estate", description: "Real estate, architecture, interiors, and construction" },
-  { name: "Lifestyle", description: "Lifestyle, retail, hospitality, and personal services" },
-  { name: "Wellness", description: "Health, fitness, medical, and wellness services" },
-]
 
 interface PowerTeamsSectionProps {
   membersByTeam: Record<PowerTeamName, Member[]>
@@ -43,7 +35,7 @@ function TeamHeader({ members }: { members: Member[] }) {
 }
 
 export function PowerTeamsSection({ membersByTeam, onMemberClick }: PowerTeamsSectionProps) {
-  const allMembers = sortMembersBySurname(POWER_TEAMS.flatMap((t) => membersByTeam[t.name] || []))
+  const allMembers = sortMembersBySurname(POWER_TEAM_DEFINITIONS.flatMap((t) => membersByTeam[t.name] || []))
 
   return (
     <section id="power-teams" className="bg-secondary/20 py-12 md:py-16">
@@ -67,7 +59,7 @@ export function PowerTeamsSection({ membersByTeam, onMemberClick }: PowerTeamsSe
               All
               <span className="ml-1.5 text-xs opacity-70">({allMembers.length})</span>
             </TabsTrigger>
-            {POWER_TEAMS.map((team) => (
+            {POWER_TEAM_DEFINITIONS.map((team) => (
               <TabsTrigger
                 key={team.name}
                 value={team.name}
@@ -90,7 +82,7 @@ export function PowerTeamsSection({ membersByTeam, onMemberClick }: PowerTeamsSe
             </div>
           </TabsContent>
 
-          {POWER_TEAMS.map((team) => {
+          {POWER_TEAM_DEFINITIONS.map((team) => {
             const members = sortMembersBySurname(membersByTeam[team.name] || [])
             return (
               <TabsContent key={team.name} value={team.name}>

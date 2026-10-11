@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react"
-import type { Member, Committee, CommitteeMember, PowerTeamName } from "@/lib/types"
+import { POWER_TEAM_NAMES, type Member, type Committee, type CommitteeMember, type PowerTeamName } from "@/lib/types"
 import { getPublicDirectory } from "@/lib/publicApi"
 import { Header } from "@/components/Header"
 import { HeroSection } from "@/components/HeroSection"
@@ -73,14 +73,9 @@ export default function App() {
   }, [committeeMembers])
 
   const membersByTeam = useMemo(() => {
-    const teams: Record<PowerTeamName, Member[]> = {
-      Corporate: [],
-      "Marketing & Branding": [],
-      MSME: [],
-      "Real-Estate": [],
-      Lifestyle: [],
-      Wellness: [],
-    }
+    const teams = Object.fromEntries(
+      POWER_TEAM_NAMES.map((team) => [team, [] as Member[]]),
+    ) as Record<PowerTeamName, Member[]>
     for (const m of members) {
       if (m.power_team && m.power_team in teams) {
         teams[m.power_team as PowerTeamName].push(m)

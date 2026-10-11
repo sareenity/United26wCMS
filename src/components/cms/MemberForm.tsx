@@ -52,6 +52,7 @@ import type {
   CommitteeMember,
   Member,
 } from "@/lib/types"
+import { POWER_TEAM_NAMES } from "@/lib/types"
 
 const schema = z.object({
   first_name: z.string().min(1, "Required"),
@@ -484,12 +485,9 @@ export function MemberForm({ open, member, committees, assignments, onClose, onS
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__none__">None</SelectItem>
-                          <SelectItem value="Corporate">Corporate</SelectItem>
-                          <SelectItem value="Marketing & Branding">Marketing &amp; Branding</SelectItem>
-                          <SelectItem value="MSME">MSME</SelectItem>
-                          <SelectItem value="Real-Estate">Real-Estate</SelectItem>
-                          <SelectItem value="Lifestyle">Lifestyle</SelectItem>
-                          <SelectItem value="Wellness">Wellness</SelectItem>
+                          {POWER_TEAM_NAMES.map((team) => (
+                            <SelectItem key={team} value={team}>{team}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     )}

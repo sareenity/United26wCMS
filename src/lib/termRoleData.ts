@@ -55,7 +55,7 @@ const MEMBER_NAME_MAP: Record<string, string> = {
   Pratik: "Pratik Mishra",
   Janish: "Janish Jain",
   "Dr Aniket": "Aniket Bhide",
-  Abhishek: "Abhishek",
+  Abhishek: "Abhishek Jaiswal",
   Vidit: "Vidit",
 }
 
@@ -124,12 +124,14 @@ const MEMBERSHIP_MEMBERS = ["Pooja", "Sanikka", "Priyanka", "Hardik", "Anuja", "
 const VISITOR_HOST_MEMBERS = ["Zubin", "Purvi", "Janish", "Divya", "Nalini"]
 
 const POWER_TEAM_ROWS: PowerTeamRow[] = [
-  { name: "Corporate", members: ["Priyanka", "Hardik", "Purva", "Janish", "Divya", "Ankit"] },
-  { name: "Marketing & Branding", members: ["Adnan", "Zubin", "Sahil", "Sachin", "Rushi", "Abhishek"] },
-  { name: "MSME", members: ["Sanikka", "Rohit J", "Rohit S", "Shweta", "Nikhil", "Anuja"] },
-  { name: "Real-Estate", members: ["Nalini", "Pratik", "Jayessh", "Khushbu", "Atharva", "Khushal", "Poonam", "Vidit"] },
-  { name: "Lifestyle", members: ["Purvi", "Pooja", "Tamanna", "Hrishit", "Mayur", "Shagun", "Gaurav"] },
-  { name: "Wellness", members: ["Shekhar", "Dr Aniket", "Saumil", "Jinal", "Bhavana", "Neisha"] },
+  { name: "Corporate", members: ["Hardik", "Purva", "Ankit", "Janish", "Divya", "Tamanna"] },
+  { name: "Marketing & Branding", members: ["Adnan", "Zubin", "Sahil", "Sachin", "Rushi", "Abhishek", "Rohit S"] },
+  { name: "MSME", members: ["Sanikka", "Rohit J", "Priyanka", "Anuja", "Shweta", "Nikhil"] },
+  { name: "Real-Estate", members: ["Nalini", "Pratik", "Jayessh", "Khushbu", "Atharva", "Kushal", "Poonam", "Gaurav", "Chandrashekhar"] },
+  {
+    name: "Lifestyle, Health & Wellness",
+    members: ["Purvi", "Jinal", "Pooja", "Hrishit", "Mayur", "Shagun", "Saumil", "Dr Aniket", "Bhavana"],
+  },
 ]
 
 export const TERM_COMMITTEES: Committee[] = [

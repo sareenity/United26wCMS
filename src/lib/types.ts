@@ -3,11 +3,18 @@ export const POWER_TEAM_NAMES = [
   "Marketing & Branding",
   "MSME",
   "Real-Estate",
-  "Lifestyle",
-  "Wellness",
+  "Lifestyle, Health & Wellness",
 ] as const
 
 export type PowerTeamName = (typeof POWER_TEAM_NAMES)[number]
+export type LegacyPowerTeamName = "Lifestyle & Wellness" | "Property" | "Lifestyle" | "Wellness"
+
+export interface PowerTeamAssignmentInput {
+  id: string
+  power_team: PowerTeamName
+  is_power_team_captain: boolean
+  is_power_team_vice_captain: boolean
+}
 
 export interface Member {
   id: string
@@ -19,7 +26,7 @@ export interface Member {
   email: string | null
   photo_url: string | null
   chapter_role: "support" | "leadership" | "member"
-  power_team: PowerTeamName | "Lifestyle & Wellness" | "Property" | null
+  power_team: PowerTeamName | LegacyPowerTeamName | null
   is_power_team_captain: boolean
   is_power_team_vice_captain: boolean
   tagline: string | null

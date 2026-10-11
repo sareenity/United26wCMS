@@ -4,6 +4,7 @@ import { AdminLayout } from "@/components/cms/AdminLayout"
 import { MembersTable } from "@/components/cms/MembersTable"
 import { MemberForm } from "@/components/cms/MemberForm"
 import { StatisticsEditor } from "@/components/cms/StatisticsEditor"
+import { PowerTeamsEditor } from "@/components/cms/PowerTeamsEditor"
 import { getCommitteeData, getMembers, isAuthenticated, logout } from "@/lib/cmsApi"
 import type { Committee, CommitteeMember, Member } from "@/lib/types"
 import { resolveTermRoleData } from "@/lib/termRoleData"
@@ -17,7 +18,7 @@ export default function CmsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<Member | null>(null)
   const [syncIssues, setSyncIssues] = useState<string[]>([])
-  const [activeSection, setActiveSection] = useState<"members" | "statistics">("members")
+  const [activeSection, setActiveSection] = useState<"members" | "power-teams" | "statistics">("members")
 
   const fetchMembers = useCallback(async () => {
     setLoadingMembers(true)
@@ -117,7 +118,11 @@ export default function CmsPage() {
       onLogout={handleLogout}
       activeSection={activeSection}
       onSectionChange={setActiveSection}
-      breadcrumb={activeSection === "members" ? "Members" : "Statistics"}
+      breadcrumb={{
+        members: "Members",
+        "power-teams": "Power Teams",
+        statistics: "Statistics",
+      }[activeSection]}
     >
       {activeSection === "members" ? <div className="space-y-4">
         <div>
@@ -142,7 +147,11 @@ export default function CmsPage() {
           onRefresh={fetchMembers}
           onDownloadPDF={handleDownloadPDF}
         />
-      </div> : <StatisticsEditor />}
+      </div> : activeSection === "power-teams" ? (
+        <PowerTeamsEditor members={members} onSaved={setMembers} />
+      ) : (
+        <StatisticsEditor />
+      )}
 
       {activeSection === "members" && (
         <MemberForm

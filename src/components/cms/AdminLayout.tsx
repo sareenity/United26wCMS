@@ -20,15 +20,15 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import { BarChart3, Users, LogOut } from "lucide-react"
+import { BarChart3, Users, LogOut, Network } from "lucide-react"
 import { logout } from "@/lib/cmsApi"
 
 interface AdminLayoutProps {
   children: ReactNode
   onLogout: () => void
   breadcrumb?: string
-  activeSection: "members" | "statistics"
-  onSectionChange: (section: "members" | "statistics") => void
+  activeSection: "members" | "power-teams" | "statistics"
+  onSectionChange: (section: "members" | "power-teams" | "statistics") => void
 }
 
 export function AdminLayout({
@@ -66,6 +66,16 @@ export function AdminLayout({
 
         <SidebarContent className="pt-2">
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                isActive={activeSection === "power-teams"}
+                tooltip="Power Teams"
+                onClick={() => onSectionChange("power-teams")}
+              >
+                <Network size={16} />
+                <span>Power Teams</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 isActive={activeSection === "members"}

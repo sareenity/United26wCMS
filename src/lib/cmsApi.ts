@@ -4,6 +4,7 @@ import type {
   CommitteeData,
   CommitteeMember,
   Member,
+  PowerTeamAssignmentInput,
 } from "./types"
 import {
   normalizeChapterStatistics,
@@ -106,6 +107,13 @@ export async function saveMember(
     assignments,
   })
   return { member: data.data, assignments: data.assignments }
+}
+
+export async function savePowerTeams(
+  assignments: PowerTeamAssignmentInput[],
+): Promise<Member[]> {
+  const data = await call<{ data: Member[] }>("save-power-teams", { assignments })
+  return data.data
 }
 
 export async function softDeleteMember(id: string): Promise<void> {

@@ -121,6 +121,13 @@ async function sendLockoutAlert(
 }
 
 const STATISTIC_REGIONS = ["worldwide", "india", "mumbai", "united"] as const
+const POWER_TEAM_NAMES = [
+  "Corporate",
+  "Marketing & Branding",
+  "MSME",
+  "Real-Estate",
+  "Lifestyle, Health & Wellness",
+] as const
 const STATISTIC_CARD_COUNTS: Record<StatisticRegion, number> = {
   worldwide: 5,
   india: 6,
@@ -131,6 +138,14 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3
 const CMS_SESSION_HOURS = 8
 
 type StatisticRegion = (typeof STATISTIC_REGIONS)[number]
+type PowerTeamName = (typeof POWER_TEAM_NAMES)[number]
+
+interface PowerTeamAssignment {
+  id: string
+  power_team: PowerTeamName
+  is_power_team_captain: boolean
+  is_power_team_vice_captain: boolean
+}
 
 interface StatisticItem {
   label: string
@@ -142,6 +157,46 @@ interface StatisticRecord {
   region: StatisticRegion
   summary: string
   stats: StatisticItem[]
+}
+
+function validatePowerTeamAssignments(input: unknown): PowerTeamAssignment[] | null {
+  if (!Array.isArray(input) || input.length === 0 || input.length > 200) return null
+
+  const assignments: PowerTeamAssignment[] = []
+  const ids = new Set<string>()
+  for (const item of input) {
+    if (!item || typeof item !== "object") return null
+    const candidate = item as Record<string, unknown>
+    if (
+      typeof candidate.id !== "string"
+      || !UUID_PATTERN.test(candidate.id)
+      || ids.has(candidate.id)
+      || typeof candidate.power_team !== "string"
+      || !POWER_TEAM_NAMES.includes(candidate.power_team as PowerTeamName)
+      || typeof candidate.is_power_team_captain !== "boolean"
+      || typeof candidate.is_power_team_vice_captain !== "boolean"
+      || (candidate.is_power_team_captain && candidate.is_power_team_vice_captain)
+    ) return null
+
+    ids.add(candidate.id)
+    assignments.push({
+      id: candidate.id,
+      power_team: candidate.power_team as PowerTeamName,
+      is_power_team_captain: candidate.is_power_team_captain,
+      is_power_team_vice_captain: candidate.is_power_team_vice_captain,
+    })
+  }
+
+  for (const team of POWER_TEAM_NAMES) {
+    const teamAssignments = assignments.filter((assignment) => assignment.power_team === team)
+    if (
+      teamAssignments.length === 0
+      || teamAssignments.filter((assignment) => assignment.is_power_team_captain).length !== 1
+      || teamAssignments.filter((assignment) => assignment.is_power_team_vice_captain).length !== 1
+    ) return null
+  }
+
+  return assignments
 }
 
 function validateStatistics(input: unknown): StatisticRecord[] | null {
@@ -401,6 +456,53 @@ Deno.serve(async (req: Request) => {
             { onConflict: "region" },
           )
           .select("region, summary, stats, updated_at")
+        if (error) throw error
+        return json({ data })
+      }
+
+      case "save-power-teams": {
+        const assignments = validatePowerTeamAssignments(body.assignments)
+        if (!assignments) {
+          return json({
+            error: "Every active chapter member needs one of the five teams, with exactly one captain and vice captain per team",
+          }, 400)
+        }
+
+        const { data: eligibleMembers, error: eligibleError } = await supabase
+          .from("members")
+          .select("id")
+          .eq("is_active", true)
+          .neq("chapter_role", "support")
+        if (eligibleError) throw eligibleError
+
+        const eligibleIds = new Set((eligibleMembers ?? []).map((member) => member.id))
+        const assignedIds = new Set(assignments.map((assignment) => assignment.id))
+        if (
+          eligibleIds.size !== assignedIds.size
+          || [...eligibleIds].some((id) => !assignedIds.has(id))
+        ) {
+          return json({
+            error: "Power Team assignments must include every active chapter member exactly once",
+          }, 400)
+        }
+
+        const updateResults = await Promise.all(assignments.map((assignment) => (
+          supabase
+            .from("members")
+            .update({
+              power_team: assignment.power_team,
+              is_power_team_captain: assignment.is_power_team_captain,
+              is_power_team_vice_captain: assignment.is_power_team_vice_captain,
+            })
+            .eq("id", assignment.id)
+        )))
+        const failedUpdate = updateResults.find((result) => result.error)
+        if (failedUpdate?.error) throw failedUpdate.error
+
+        const { data, error } = await supabase
+          .from("members")
+          .select("*")
+          .order("sort_order")
         if (error) throw error
         return json({ data })
       }
